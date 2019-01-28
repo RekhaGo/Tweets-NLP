@@ -10,8 +10,7 @@ urls = ['https://canvas.northwestern.edu/courses/88875/files/6315645/download?ve
 
 for u in urls:
     filename = wget.download(u)
-
-    zip = ZipFile(filename)
+    zip = ZipFile("../data/"+filename)
     zip.printdir()
     zip.extractall()
     print(filename, '--extract succesfull')
