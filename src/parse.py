@@ -89,6 +89,7 @@ def calculate_words(tweets, word_list, alpha):
             # host_selection.append(str(key) + str(val))
             word_selection.append(str(key).replace('_',' '))
 
+    #CAUTION: with alpha to regulate size of word selection
     print(num_tweets_with_word)
     print(word_list, word_selection)
     return dict_names
