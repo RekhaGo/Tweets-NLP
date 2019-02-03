@@ -1,6 +1,7 @@
 import json
 from nltk.corpus import stopwords
 import csv
+import re
 
 
 def load_data(filename):
@@ -12,7 +13,8 @@ def load_data(filename):
     tweets = []
     for line in json_data:
         tweet = line['text'].lower()
-        tweets.append(tweet.split(' '))
+        tweet = re.sub(r'[^\w\'\s]', '', tweet)
+        tweets.append(re.findall(r"[\w']+", tweet))
     return tweets
 
 
@@ -29,6 +31,7 @@ def clean(tweets):
     for tweet in tweets:
         filtered = [w for w in tweet if not w in stopWords]
         filtered_sentences.append(filtered)
+    print(filtered_sentences[:10])
     return filtered_sentences
 
 
@@ -53,17 +56,22 @@ def print_tweets(tweets, num_tweets):
     for i in range(num_tweets):
         print(tweets[i])
 
-def calculate_hosts(tweets):
-    host_selection = []
+'''function to find most common (fraction = alpha) word-pair associations with respect to a particular word word_list
+    Arguments:
+        tweets: list of tweets, word_list: list of words, alpha: fraction of count to be selected
+        returns: nothing
+'''
+def calculate_words(tweets, word_list, alpha):
+    word_selection = []
     dict_names = dict()
 
     #Determining a good magic constant
-    num_tweets_with_host = 0
+    num_tweets_with_word = 0
 
     for tweet in tweets:
-        if 'host' in tweet or 'hosts' in tweet:
+        if any(word in tweet for word in word_list):
             if not 'next' in tweet:
-                num_tweets_with_host +=1
+                num_tweets_with_word +=1
                 for i in range(len(tweet)-1):
                     pot_name = tweet[i]+'_'+tweet[i+1]
                     # print(pot_name)
@@ -75,14 +83,15 @@ def calculate_hosts(tweets):
         Magic constant below is calculated as a percentage of total tweets, since 2015 is
         much larger than 2013...
     '''
-    magic_constant = .26*num_tweets_with_host #TODO take another look at this.
+    magic_constant = alpha*num_tweets_with_word #TODO take another look at this.
     for key, val in dict_names.items():
         if val > magic_constant:
             # host_selection.append(str(key) + str(val))
-            host_selection.append(str(key).replace('_',' '))
+            word_selection.append(str(key).replace('_',' '))
 
-    # print(num_tweets_with_host)
-    print('Hosts: ', host_selection)
+    print(num_tweets_with_word)
+    print(word_list, word_selection)
+    return dict_names
 
 
 
@@ -119,10 +128,9 @@ def main():
 
 
 
-
-    calculate_hosts(cleaned_tweets)
-
-
+    #converted host context counting to general word counting and context based selection
+    calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
+    names_dic = calculate_words(cleaned_tweets, ['nominees', 'nominee', 'golden', 'globe', 'globes', 'best', 'actor'], 0.009)
 
 
 if __name__ == '__main__':
