@@ -7,6 +7,7 @@ import re
 def load_data(filename):
     '''
         Load data from json
+        Added in regex preprocessing for cleaning and tokenizing
     '''
     print('loading dataset : ',filename)
     json_data = json.loads(open(filename).read())
