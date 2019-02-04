@@ -14,8 +14,9 @@ def load_data(filename):
     tweets = []
     for line in json_data:
         tweet = line['text'].lower()
-        tweet = re.sub(r'[^\w\'\s]', '', tweet)
-        tweets.append(re.findall(r"[\w']+", tweet))
+        tweet = re.sub(r'[^\w\'\#\@\s]', '', tweet)
+        tweets.append(re.findall(r"[\w\#\@']+", tweet))
+        # tweets.append(tweet.split(' '))
     return tweets
 
 
