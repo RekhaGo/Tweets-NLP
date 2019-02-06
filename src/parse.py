@@ -132,10 +132,10 @@ def main():
         cleaned_tweets = list(reader)
 
 
-    #hello host_branch
+    #hello award branch
     #converted host context counting to general word counting and context based selection
     calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
+    names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
 
 
 if __name__ == '__main__':
