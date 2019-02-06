@@ -2,7 +2,7 @@ import json
 from nltk.corpus import stopwords
 import csv
 import re
-
+import nltk
 
 def load_data(filename):
     '''
@@ -29,9 +29,13 @@ def clean(tweets):
     print('cleaning data...')
     filtered_sentences = []
     #removing stop words from nltk corpus
+    words = set(nltk.corpus.words.words())
     stopWords = create_stop_words()
     for tweet in tweets:
-        filtered = [w for w in tweet if not w in stopWords]
+
+        # filtered = [w for w in tweet if not w in stopWords and w in ]
+        filtered = [w for w in tweet if w in words]
+
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
     return filtered_sentences
@@ -116,9 +120,9 @@ def main():
         Comment below before turn-in
         TODO
     '''
-    # with open('cleaned.csv', 'w') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerows(cleaned_tweets)
+    with open('cleaned.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerows(cleaned_tweets)
 
 
     '''
@@ -133,7 +137,7 @@ def main():
 
     #converted host context counting to general word counting and context based selection
     calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    names_dic = calculate_words(cleaned_tweets, ['nominees', 'nominee', 'golden', 'globe', 'globes', 'best', 'actor'], 0.009)
+    names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
 
 
 if __name__ == '__main__':
