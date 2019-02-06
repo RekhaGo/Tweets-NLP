@@ -103,8 +103,6 @@ def calculate_words(tweets, word_list, alpha):
 
 
 
-
-
 def main():
     '''
         The loading of tweets takes a while, so writing it to cleaned.csv to read from
@@ -134,10 +132,10 @@ def main():
         cleaned_tweets = list(reader)
 
 
-
+    #hello host_branch
     #converted host context counting to general word counting and context based selection
     calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
+    # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
 
 
 if __name__ == '__main__':
