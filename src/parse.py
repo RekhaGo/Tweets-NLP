@@ -33,8 +33,8 @@ def clean(tweets):
     stopWords = create_stop_words()
     for tweet in tweets:
 
-        # filtered = [w for w in tweet if not w in stopWords and w in ]
-        filtered = [w for w in tweet if w in words]
+        filtered = [w for w in tweet if not w in stopWords]
+        # filtered = [w for w in tweet if w in words]
 
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
@@ -101,8 +101,6 @@ def calculate_words(tweets, word_list, alpha):
     return dict_names
 
 
-#hello lukas
-
 
 
 def main():
@@ -134,10 +132,10 @@ def main():
     #     cleaned_tweets = list(reader)
 
 
-
+    #hello host_branch
     #converted host context counting to general word counting and context based selection
     calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
+    # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
 
 
 if __name__ == '__main__':
