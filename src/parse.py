@@ -33,8 +33,8 @@ def clean(tweets):
     stopWords = create_stop_words()
     for tweet in tweets:
 
-        # filtered = [w for w in tweet if not w in stopWords and w in ]
-        filtered = [w for w in tweet if w in words]
+        filtered = [w for w in tweet if not w in stopWords]
+        # filtered = [w for w in tweet if w in words]
 
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
@@ -112,26 +112,26 @@ def main():
         TODO
     '''
 
-    tweets = load_data('../data/gg2015.json')
-    cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
-    print(len(cleaned_tweets))
+    # tweets = load_data('../data/gg2015.json')
+    # cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
+    # print(len(cleaned_tweets))
     '''
         Writing preprocessed data to file
         Comment below before turn-in
         TODO
     '''
-    with open('cleaned.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerows(cleaned_tweets)
+    # with open('cleaned.csv', 'w') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(cleaned_tweets)
 
 
     '''
         reading preprocessed data from file
     '''
-    # cleaned_tweets = []
-    # with open('cleaned.csv', 'r') as f:
-    #     reader = csv.reader(f)
-    #     cleaned_tweets = list(reader)
+    cleaned_tweets = []
+    with open('cleaned.csv', 'r') as f:
+        reader = csv.reader(f)
+        cleaned_tweets = list(reader)
 
 
 
