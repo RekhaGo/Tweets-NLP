@@ -102,6 +102,7 @@ def calculate_words(tweets, word_list, alpha):
 
 
 
+#the final host -branch split
 
 def main():
     '''
