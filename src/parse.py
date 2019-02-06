@@ -101,7 +101,7 @@ def calculate_words(tweets, word_list, alpha):
     return dict_names
 
 
-
+#hello lukas
 
 
 
