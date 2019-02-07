@@ -14,8 +14,8 @@ def load_data(filename):
     tweets = []
     for line in json_data:
         tweet = line['text'].lower()
-        tweet = re.sub(r'[^\w\'\#\@\s]', '', tweet)
-        tweets.append(re.findall(r"[\w\#\@']+", tweet))
+        tweet = re.sub(r'[^\w\#\@\s\-]', '', tweet)
+        tweets.append(re.findall(r"[\w\-']+", tweet))
         # tweets.append(tweet.split(' '))
     return tweets
 
@@ -33,8 +33,8 @@ def clean(tweets):
     stopWords = create_stop_words()
     for tweet in tweets:
 
-        filtered = [w for w in tweet if not w in stopWords]
-        # filtered = [w for w in tweet if w in words]
+        #filtered = [w for w in tweet if not w in stopWords]
+        filtered = [w for w in tweet if w in words]
 
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
@@ -100,8 +100,34 @@ def calculate_words(tweets, word_list, alpha):
     print(word_list, word_selection)
     return dict_names
 
+def ngram_freq(tweets, word_list, alpha, beta = 10000):
+    ngrams = [list(nltk.ngrams(tweet,9)) for tweet in tweets]
 
+    word_selection=[]
+    dict_names = dict()
+    num_tweets_with_word=0
+    for tweet_b, tweet in zip(ngrams, tweets):
+        if any(word in tweet for word in word_list):
+            if not 'next' in tweet:
+                num_tweets_with_word +=1
+                for bg in tweet_b:
+                    pot_name = bg
+                    # print(pot_name)
+                    if pot_name in dict_names:
+                        dict_names[pot_name] +=1
+                    else:
+                        dict_names[pot_name] = 1
 
+    magic_constant1 = alpha*num_tweets_with_word #TODO take another look at this.
+    magic_constant2 = beta*num_tweets_with_word
+    for key, val in dict_names.items():
+        if val > magic_constant1 and val < magic_constant2:
+            # host_selection.append(str(key) + str(val))
+            word_selection.append(str(key).replace('_',' '))
+
+    print(num_tweets_with_word)
+    print(word_list, word_selection)
+    return dict_names
 
 def main():
     '''
@@ -121,7 +147,7 @@ def main():
     # with open('cleaned.csv', 'w') as f:
     #     writer = csv.writer(f)
     #     writer.writerows(cleaned_tweets)
-
+    # #
 
     '''
         reading preprocessed data from file
@@ -134,8 +160,9 @@ def main():
 
     #hello award branch
     #converted host context counting to general word counting and context based selection
-    calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
+    #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
+    # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
+    ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
 
 
 if __name__ == '__main__':
