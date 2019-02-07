@@ -129,6 +129,28 @@ def ngram_freq(tweets, word_list, alpha, beta = 10000):
     print(word_list, word_selection)
     return dict_names
 
+def reg_chunker(tweets):
+    '''
+    best performance by an actor in a mini-series or motion picture made for television
+    [('best', 'RBS'), ('performance', 'NN'), ('by', 'IN'), ('an', 'DT'), ('actor', 'NN'),
+    ('in', 'IN'), ('a', 'DT'), ('mini-series', 'NNS'), ('or', 'CC'), ('motion', 'NN'), ('picture', 'NN'),
+    ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
+    '''
+    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT><NNS>?<CC>?<NN>*<:>?<VBN>?<IN>?<NN>?}"""
+    #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
+
+    parser = nltk.RegexpParser(patterns)
+    trees = []
+    for tweet in tweets:
+        if len(nltk.pos_tag(tweet))!=0:
+            tree = parser.parse(nltk.pos_tag(tweet))
+            # print (tweet)
+            for subtree in tree.subtrees():
+                if subtree.label() == 'CHUNK':
+                    trees.append(subtree)
+                    print (subtree)
+    print (trees)
+
 def main():
     '''
         The loading of tweets takes a while, so writing it to cleaned.csv to read from
@@ -162,7 +184,8 @@ def main():
     #converted host context counting to general word counting and context based selection
     #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
     # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
-    ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
+    # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
+    reg_chunker(cleaned_tweets)
 
 
 if __name__ == '__main__':
