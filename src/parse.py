@@ -14,14 +14,9 @@ def load_data(filename):
     tweets = []
     for line in json_data:
         tweet = line['text'].lower()
-<<<<<<< HEAD
         tweet = re.sub(r'[^\w\#\@\s\-]', '', tweet)
         tweets.append(re.findall(r"[\w\-']+", tweet))
         # tweets.append(tweet.split(' '))
-=======
-        tweet = re.sub(r'[^\w\'\#\@\s]', '', tweet)
-        tweets.append(re.findall(r"[\w\#\@']+", tweet))
->>>>>>> host_branch
     return tweets
 
 def clean(tweets):
@@ -35,14 +30,9 @@ def clean(tweets):
     words = set(nltk.corpus.words.words())
     stopWords = create_stop_words()
     for tweet in tweets:
-<<<<<<< HEAD
 
         #filtered = [w for w in tweet if not w in stopWords]
         filtered = [w for w in tweet if w in words]
-=======
-        filtered = [w for w in tweet if not w in stopWords]
-
->>>>>>> host_branch
 
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
@@ -108,7 +98,6 @@ def calculate_words(tweets, word_list, alpha):
     print(word_list, word_selection)
     return dict_names
 
-<<<<<<< HEAD
 def ngram_freq(tweets, word_list, alpha, beta = 10000):
     ngrams = [list(nltk.ngrams(tweet,9)) for tweet in tweets]
 
@@ -159,7 +148,7 @@ def reg_chunker(tweets):
                     trees.append(subtree)
                     print (subtree)
     print (trees)
-=======
+
 def write_file(lst_of_years):
     for val in lst_of_years:
         tweets = load_data('../data/gg'+str(val)+'.json')
@@ -173,6 +162,7 @@ def write_file(lst_of_years):
         with open('cleaned'+str(val)+'.csv', 'w') as f:
             writer = csv.writer(f)
             writer.writerows(cleaned_tweets)
+
 def get_cleaned_tweets(year):
     cleaned_tweets = []
     with open('cleaned'+str(year)+'.csv', 'r') as f:
@@ -213,7 +203,6 @@ def get_hosts(year):
             # hosts.append(str(key) + str(val))
             hosts.append(str(key).replace('_', ' '))
     return hosts
->>>>>>> host_branch
 
 def main():
     '''
@@ -224,16 +213,10 @@ def main():
     # write_file([2013]);
     # tweets = get_cleaned_tweets(2013)
 
-<<<<<<< HEAD
-    # tweets = load_data('../data/gg2015.json')
-    # cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
-    # print(len(cleaned_tweets))
-=======
->>>>>>> host_branch
     '''
     Getting the Hosts
     '''
-<<<<<<< HEAD
+
     # with open('cleaned.csv', 'w') as f:
     #     writer = csv.writer(f)
     #     writer.writerows(cleaned_tweets)
@@ -255,10 +238,10 @@ def main():
     # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
     reg_chunker(cleaned_tweets)
 
-=======
+
     res = get_hosts(2013)
     print(res)
->>>>>>> host_branch
+
 
 if __name__ == '__main__':
     main()
