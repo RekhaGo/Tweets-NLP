@@ -16,10 +16,7 @@ def load_data(filename):
         tweet = line['text'].lower()
         tweet = re.sub(r'[^\w\'\#\@\s]', '', tweet)
         tweets.append(re.findall(r"[\w\#\@']+", tweet))
-        # tweets.append(tweet.split(' '))
     return tweets
-
-
 
 def clean(tweets):
     '''
@@ -32,9 +29,8 @@ def clean(tweets):
     words = set(nltk.corpus.words.words())
     stopWords = create_stop_words()
     for tweet in tweets:
-
         filtered = [w for w in tweet if not w in stopWords]
-        # filtered = [w for w in tweet if w in words]
+
 
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
@@ -100,9 +96,59 @@ def calculate_words(tweets, word_list, alpha):
     print(word_list, word_selection)
     return dict_names
 
+def write_file(lst_of_years):
+    for val in lst_of_years:
+        tweets = load_data('../data/gg'+str(val)+'.json')
+        cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
+        print(len(cleaned_tweets))
+        '''
+            Writing preprocessed data to file
+            Comment below before turn-in
+            TODO
+        '''
+        with open('cleaned'+str(val)+'.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerows(cleaned_tweets)
+def get_cleaned_tweets(year):
+    cleaned_tweets = []
+    with open('cleaned'+str(year)+'.csv', 'r') as f:
+        reader = csv.reader(f)
+        cleaned_tweets = list(reader)
+    return cleaned_tweets
 
 
-#the final host -branch split
+
+
+def get_hosts(year):
+    cleaned_tweets = get_cleaned_tweets(year)
+    word_list = ['hosts', 'host', 'hosting']
+    hosts = []
+    dict_names = dict()
+
+    # Determining a good magic constant
+    num_tweets_with_word = 0
+
+    for tweet in cleaned_tweets:
+        if any(word in tweet for word in word_list):
+            if not 'next' in tweet:
+                num_tweets_with_word += 1
+                for i in range(len(tweet) - 1):
+                    pot_name = tweet[i] + '_' + tweet[i + 1]
+                    # print(pot_name)
+                    if pot_name in dict_names:
+                        dict_names[pot_name] += 1
+                    else:
+                        dict_names[pot_name] = 1
+    '''
+        Magic constant below is calculated as a percentage of total tweets, since 2015 is
+        much larger than 2013...
+    '''
+    magic_constant = .28 * num_tweets_with_word
+    for key, val in dict_names.items():
+        if val > magic_constant:
+            # hosts.append(str(key) + str(val))
+            hosts.append(str(key).replace('_', ' '))
+    return hosts
 
 def main():
     '''
@@ -110,34 +156,14 @@ def main():
         after processing. REMOVE after development or if modifying preprocessing
         TODO
     '''
-
-    tweets = load_data('../data/gg2015.json')
-    cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
-    print(len(cleaned_tweets))
-    '''
-        Writing preprocessed data to file
-        Comment below before turn-in
-        TODO
-    '''
-    with open('cleaned.csv', 'w') as f:
-        writer = csv.writer(f)
-        writer.writerows(cleaned_tweets)
-
+    # write_file([2013]);
+    # tweets = get_cleaned_tweets(2013)
 
     '''
-        reading preprocessed data from file
+    Getting the Hosts
     '''
-    # cleaned_tweets = []
-    # with open('cleaned.csv', 'r') as f:
-    #     reader = csv.reader(f)
-    #     cleaned_tweets = list(reader)
-
-
-    #hello host_branch
-    #converted host context counting to general word counting and context based selection
-    calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
-    # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.009)
-
+    res = get_hosts(2013)
+    print(res)
 
 if __name__ == '__main__':
     main()

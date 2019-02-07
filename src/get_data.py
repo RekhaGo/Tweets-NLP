@@ -18,10 +18,12 @@ urls = ['https://canvas.northwestern.edu/courses/88875/files/6315645/download?ve
         'https://canvas.northwestern.edu/courses/88875/files/6315652/download?verifier=oetjl6vjvBWVWYzALCQR7M2E0CdTMtwnt5U7gcei&wrap=1']
 
 for u in urls:
-    filename = wget.download(u)
+    filename = wget.download(u, '../data')
     zip = ZipFile("../data/"+filename)
     zip.printdir()
-    zip.extractall()
+    zip.extractall(
+        '../data'
+    )
     print(filename, '--extract succesfull')
 
 
