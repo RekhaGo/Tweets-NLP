@@ -133,8 +133,9 @@ def reg_chunker(tweets):
     [('best', 'RBS'), ('performance', 'NN'), ('by', 'IN'), ('an', 'DT'), ('actor', 'NN'),
     ('in', 'IN'), ('a', 'DT'), ('mini-series', 'NNS'), ('or', 'CC'), ('motion', 'NN'), ('picture', 'NN'),
     ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
+    REQ TO ADD AFTER THE SECOND NN*
     '''
-    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT><NNS>?<CC>?<NN>*<:>?<VBN>?<IN>?<NN>?}"""
+    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT>(<NN>,<NNS>)*?<CC>?<NN><NN>*<:>?<VBN>?<IN>?<NN>?}"""
     #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
 
     parser = nltk.RegexpParser(patterns)
@@ -146,7 +147,7 @@ def reg_chunker(tweets):
             for subtree in tree.subtrees():
                 if subtree.label() == 'CHUNK':
                     trees.append(subtree)
-                    print (subtree)
+                    print (subtree, tweet)
     print (trees)
 
 def write_file(lst_of_years):
@@ -225,18 +226,18 @@ def main():
     '''
         reading preprocessed data from file
     '''
-    cleaned_tweets = []
-    with open('cleaned.csv', 'r') as f:
-        reader = csv.reader(f)
-        cleaned_tweets = list(reader)
-
+    # cleaned_tweets = []
+    # with open('cleaned.csv', 'r') as f:
+    #     reader = csv.reader(f)
+    #     cleaned_tweets = list(reader)
+    # write_file([2013])
 
     #hello award branch
     #converted host context counting to general word counting and context based selection
     #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
     # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
     # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
-    reg_chunker(cleaned_tweets)
+    reg_chunker(get_cleaned_tweets(2013))
 
 
     res = get_hosts(2013)
