@@ -28,6 +28,7 @@ def clean(tweets):
     filtered_sentences = []
     #removing stop words from nltk corpus
     words = set(nltk.corpus.words.words())
+    words.add("-")
     stopWords = create_stop_words()
     for tweet in tweets:
 
@@ -135,19 +136,23 @@ def reg_chunker(tweets):
     ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
     REQ TO ADD AFTER THE SECOND NN*
     '''
-    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT>(<NN>,<NNS>)*?<CC>?<NN><NN>*<:>?<VBN>?<IN>?<NN>?}"""
+    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN>?<NN>*?}
+                {<RBS><NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?<CC><JJ>}
+                """
     #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
 
     parser = nltk.RegexpParser(patterns)
     trees = []
     for tweet in tweets:
         if len(nltk.pos_tag(tweet))!=0:
-            tree = parser.parse(nltk.pos_tag(tweet))
-            # print (tweet)
-            for subtree in tree.subtrees():
-                if subtree.label() == 'CHUNK':
-                    trees.append(subtree)
-                    print (subtree, tweet)
+            if '-' in tweet:
+                tweet[tweet.index('-')] = 'HYP'
+                tree = parser.parse(nltk.pos_tag(tweet))
+                # print (tweet)
+                for subtree in tree.subtrees():
+                    if subtree.label() == 'CHUNK':
+                        trees.append(subtree)
+                        print (subtree, tweet, nltk.pos_tag(tweet))
     print (trees)
 
 def write_file(lst_of_years):
@@ -167,6 +172,7 @@ def write_file(lst_of_years):
 def get_cleaned_tweets(year):
     cleaned_tweets = []
     with open('cleaned'+str(year)+'.csv', 'r') as f:
+        print("Getting Cleaned Tweets.....")
         reader = csv.reader(f)
         cleaned_tweets = list(reader)
     return cleaned_tweets
