@@ -4,6 +4,9 @@ import csv
 import re
 import nltk
 
+
+LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
+
 def load_data(filename):
     '''
         Load data from json
@@ -14,8 +17,8 @@ def load_data(filename):
     tweets = []
     for line in json_data:
         tweet = line['text'].lower()
-        tweet = re.sub(r'[^\w\'\#\@\s]', '', tweet)
-        tweets.append(re.findall(r"[\w\#\@']+", tweet))
+        tweet = re.sub(r'[^\w\'\#\@\s\-]', '', tweet)
+        tweets.append(re.findall(r"[\w\#\@\-']+", tweet))
     return tweets
 
 def clean(tweets):
@@ -30,13 +33,17 @@ def clean(tweets):
     stopWords = create_stop_words()
     for tweet in tweets:
         filtered = [w for w in tweet if not w in stopWords]
-
-
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
     return filtered_sentences
 
-
+def get_clean_awards():
+    awards = []
+    stopwords = create_stop_words()
+    for award in LIST_OF_AWARDS:
+        filtered = [w for w in award if not w in stopwords]
+        awards.append(filtered)
+    return awards
 
 def create_stop_words():
     '''
@@ -162,8 +169,21 @@ def main():
     '''
     Getting the Hosts
     '''
-    res = get_hosts(2013)
-    print(res)
+    # res = get_hosts(2013)
+    # print(res)
+    awards = get_clean_awards()
+    print(awards)
+
+
+
+
+
+    tweets = get_cleaned_tweets(2013)
+
+    # for tweet in tweets:
+        # if any('best' in word for word in tweet):
+            # print(tweet)
+
 
 if __name__ == '__main__':
     main()
