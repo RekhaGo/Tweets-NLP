@@ -3,6 +3,7 @@ from nltk.corpus import stopwords
 import csv
 import re
 import nltk
+from collections import Counter
 
 def load_data(filename):
     '''
@@ -136,9 +137,14 @@ def reg_chunker(tweets):
     ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
     REQ TO ADD AFTER THE SECOND NN*
     '''
-    patterns = """CHUNK: {<RBS><NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN>?<NN>*?}
-                {<RBS><NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?<CC><JJ>}
-                """
+    patterns = """
+                INNER: {<IN><DT><NN><IN><DT><NN><NN>*}
+                CHUNK: {<RBS|JJS><NN><NN>*?<INNER><NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
+              """
+              # """CHUNK: {<RBS|JJS><NN.?><NN.?>*?<IN>?<DT>?<NN>?<IN>?<DT>?<NN.?>?<NN.?>*?<NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
+              #           """
+    # patterns = """CHUNK: {<RBS><NN>}""" {(<RBS>,<JJS>)<NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?}
+    # {<RBS|JJS|NN><NN><IN><DT><NN><IN><DT><NN>*<NNP>?<NN|JJ>?<CC>?<NN|JJ>?}
     #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
 
     parser = nltk.RegexpParser(patterns)
@@ -153,8 +159,14 @@ def reg_chunker(tweets):
                     if subtree.label() == 'CHUNK':
                         trees.append(subtree)
                         print (subtree, tweet, nltk.pos_tag(tweet))
-    print (trees)
-
+    print (Counter([str(tree) for tree in trees]))
+    occ = Counter([str(tree) for tree in trees])
+    num = 0
+    while num != -1:
+        num = int(input("How Many? -> "))
+        for key, val in occ.items():
+            if val > num:
+                print (key)
 def write_file(lst_of_years):
     for val in lst_of_years:
         tweets = load_data('../data/gg'+str(val)+'.json')
