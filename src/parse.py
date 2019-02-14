@@ -146,35 +146,52 @@ def reg_chunker(tweets):
     REQ TO ADD AFTER THE SECOND NN*
     '''
     patterns = """
-                INNER: {<IN><DT><NN><IN><DT><NN><NN>*}
-                CHUNK: {<RBS|JJS><NN><NN>*?<INNER><NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
+                INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
+                ORSCON: {<NN|JJ><CC><NN|JJ>}
+                HYPCON: {<NNP><ORSCON>+}
+                SINGHYP: {<NNP><NN>}
+                CHUNK: {<RBS|JJS><INNER><SINGHYP|HYPCON>?}
+
+                SHRTCHK: {<RBS|JJS><NN>+<SINGHYP|HYPCON>}
               """
               # """CHUNK: {<RBS|JJS><NN.?><NN.?>*?<IN>?<DT>?<NN>?<IN>?<DT>?<NN.?>?<NN.?>*?<NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
-              #           """
+              #           """SML: {<NN><NN><NN>+<INNER>?}
     # patterns = """CHUNK: {<RBS><NN>}""" {(<RBS>,<JJS>)<NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?}
     # {<RBS|JJS|NN><NN><IN><DT><NN><IN><DT><NN>*<NNP>?<NN|JJ>?<CC>?<NN|JJ>?}
     #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
 
     parser = nltk.RegexpParser(patterns)
     trees = []
+    keywords = ['best', 'performance', 'actor', 'actress']
     for tweet in tweets:
+
         if len(nltk.pos_tag(tweet))!=0:
-            if '-' in tweet:
-                tweet[tweet.index('-')] = 'HYP'
-                tree = parser.parse(nltk.pos_tag(tweet))
-                # print (tweet)
-                for subtree in tree.subtrees():
-                    if subtree.label() == 'CHUNK':
-                        trees.append(subtree)
-                        print (subtree, tweet, nltk.pos_tag(tweet))
-    print (Counter([str(tree) for tree in trees]))
-    occ = Counter([str(tree) for tree in trees])
+            for tok in range(len(tweet)):
+                if tweet[tok] =='-':
+                    tweet[tok] = 'HYP'
+            tree = parser.parse(nltk.pos_tag(tweet))
+            # print (tweet)
+            for subtree in tree.subtrees():
+                if subtree.label() == 'CHUNK' or subtree.label() == 'SHRTCHK':
+                    trees.append(subtree)
+                    print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
+
+    print (Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP','-') for tree in trees]))
+    occ = Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP','-') for tree in trees])
+    nummer = 2
     num = 0
     while num != -1:
-        num = int(input("How Many? -> "))
+        awards = []
+        # num = int(input("How Many? -> "))
         for key, val in occ.items():
-            if val > num:
+            # if key[-1] == '-':
+            #     key[-1] = ''
+            if val > nummer and val<1000:
+                awards.append(key)
                 print (key)
+        num = -1
+    return awards
+
 def write_file(lst_of_years):
     for val in lst_of_years:
         tweets = load_data('../data/gg'+str(val)+'.json')
@@ -231,13 +248,16 @@ def get_hosts(year):
             hosts.append(str(key).replace('_', ' '))
     return hosts
 
+def get_awards(year):
+    return reg_chunker(get_cleaned_tweets(2013))
+
 def main():
     '''
         The loading of tweets takes a while, so writing it to cleaned.csv to read from
         after processing. REMOVE after development or if modifying preprocessing
         TODO
     '''
-    # write_file([2013]);
+    write_file([2015])
     # tweets = get_cleaned_tweets(2013)
 
     '''
@@ -263,15 +283,15 @@ def main():
     #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
     # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
     # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
-    reg_chunker(get_cleaned_tweets(2013))
+    reg_chunker(get_cleaned_tweets(2015))
 
 
     res = get_hosts(2013)
     print(res)
     # res = get_hosts(2013)
     # print(res)
-    awards = get_clean_awards()
-    print(awards)
+    # awards = get_clean_awards()
+    # print(awards)
 
 
 
