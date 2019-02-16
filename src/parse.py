@@ -4,7 +4,7 @@ import csv
 import re
 import nltk
 from collections import Counter
-
+from math import floor, ceil
 
 LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
@@ -156,11 +156,10 @@ def reg_chunker(tweets):
     #             SHRTCHK: {<RBS|JJS><NN>+<SINGHYP|HYPCON>}
     # #           """
     patterns = """
-                 INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN|NNS|JJ><NN>*?<CC>?<NN|NNS|JJ>?<NN>*?}
-                 ORSCON: {<NN|JJ><CC><NN|JJ>}
+                 INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN|NNS|JJ><NN>*?<CC>?<NN|NNS|JJ>?<NN>*?<ORSCON>*}
+                 ORSCON: {<NN|JJ><NN>*<CC><NN|JJ><NN>*}
                  CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
                  SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
-
     #            """
     # patterns = """
     #              NP: {<DT>?<JJ>*<NN|NNS>}
@@ -178,15 +177,20 @@ def reg_chunker(tweets):
                     # ORSCON: {<NN|JJ><CC><NN|JJ>}
                     # CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
                     # NP: {<DT|JJ|NN>+}
+                    #SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
 
 
     parser = nltk.RegexpParser(patterns)
     trees = []
     keywords = {'best','performance', 'motion', 'television', 'series', 'music', 'artist', 'film', 'actor', 'actress', 'musical',
                 'comedy', 'album', 'lead', 'director', 'original', 'language', 'foreign', 'actress', 'actor', 'singer', 'musician', 'feature',
-                'award', 'awards', 'drama', 'rap', 'metal', 'rock', 'mini-seris', 'supporting'}
+                'award', 'awards', 'drama', 'mini-series', 'supporting'}
     n_total = 0
-    for tweet in tweets:
+    tot_tweets = len(tweets)
+    for i,tweet in enumerate(tweets):
+        perc = (float(i)/tot_tweets)*100
+        if floor(perc)%10.0 == 0:
+            print (str(perc) + '% Complete')
         if any(key in tweet for key in keywords):
             tweet = list(filter(lambda a: a != '-', tweet))
             if len(nltk.pos_tag(tweet))!=0:
@@ -199,7 +203,7 @@ def reg_chunker(tweets):
                     if subtree.label() == 'CHUNK' or subtree.label() == 'SHRTCHK' or subtree.label() == 'CHUNKNP':
                         n_total += 1
                         trees.append(subtree)
-                        print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
+                        #print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
 
     occ = Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP ','') for tree in trees])
 
@@ -217,7 +221,7 @@ def reg_chunker(tweets):
                 if occ[key] > 0:
                     n_total -= 1
                     occ[key] -= 1
-    nummer = n_total*0.003
+    nummer = ceil(n_total*0.008)
     print ("Num thresh: " + str(nummer))
     for key,val in occ.items():
         if occ[key] > nummer:
@@ -320,7 +324,7 @@ def main():
     #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
     # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
     # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
-    reg_chunker(get_cleaned_tweets(2015))
+    reg_chunker(get_cleaned_tweets(2013))
 
 
     # res = get_hosts(2013)
