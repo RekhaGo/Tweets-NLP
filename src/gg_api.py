@@ -28,8 +28,7 @@ def get_winner(year):
     '''Winners is a dictionary with the hard coded award
     names as keys, and each entry containing a single string.
     Do NOT change the name of this function or what it returns.'''
-    # Your code here
-    return winners
+    return parse.get_winner(year)
 
 def get_presenters(year):
     '''Presenters is a dictionary with the hard coded award

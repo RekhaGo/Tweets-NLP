@@ -1,4 +1,5 @@
 import requests
+import unidecode
 
 def get_kb_lists():
     query_movie ='''SELECT ?film ?filmLabel
@@ -43,11 +44,11 @@ def get_kb_lists():
 
 
     for item in kb_movies_json['results']['bindings']:
-        kb_movies.add(item['filmLabel']['value'].lower())
+        kb_movies.add(unidecode.unidecode(item['filmLabel']['value'].lower()))
     for item in kb_directors_json['results']['bindings']:
-        kb_directors.add(item['directorLabel']['value'].lower())
+        kb_directors.add(unidecode.unidecode(item['directorLabel']['value'].lower()))
     for item in kb_cast_json['results']['bindings']:
-        kb_actors.add(item['name']['value'].lower())
+        kb_actors.add(unidecode.unidecode(item['name']['value'].lower()))
 
 
     print('Writing kb to file')
@@ -55,10 +56,10 @@ def get_kb_lists():
         for listitem in kb_movies:
             filehandle.write('%s\n' % listitem)
     with open('kb_directors.txt', 'w') as filehandle:
-        for listitem in kb_movies:
+        for listitem in kb_directors:
             filehandle.write('%s\n' % listitem)
     with open('kb_actors.txt', 'w') as filehandle:
-        for listitem in kb_movies:
+        for listitem in kb_actors:
             filehandle.write('%s\n' % listitem)
 
     '''
