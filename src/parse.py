@@ -17,7 +17,8 @@ def load_data(filename):
     json_data = json.loads(open(filename).read())
     tweets = []
     for line in json_data:
-        tweet = line['text'].lower()
+        tweet = line['text']
+        # tweet = line['text'].lower()
         tweet = re.sub(r'[^\w\'\#\@\s\-]', '', tweet)
         tweets.append(re.findall(r"[\w\#\@\-']+", tweet))
     return tweets
@@ -145,51 +146,87 @@ def reg_chunker(tweets):
     ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
     REQ TO ADD AFTER THE SECOND NN*
     '''
+    # patterns = """
+    #             INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
+    #             ORSCON: {<NN|JJ><CC><NN|JJ>}
+    #             HYPCON: {<NNP><ORSCON>+}
+    #             SINGHYP: {<NNP><NN>}
+    #             CHUNK: {<RBS|JJS><INNER><SINGHYP|HYPCON>?}
+    #
+    #             SHRTCHK: {<RBS|JJS><NN>+<SINGHYP|HYPCON>}
+    # #           """
     patterns = """
-                INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
-                ORSCON: {<NN|JJ><CC><NN|JJ>}
-                HYPCON: {<NNP><ORSCON>+}
-                SINGHYP: {<NNP><NN>}
-                CHUNK: {<RBS|JJS><INNER><SINGHYP|HYPCON>?}
+                 INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN|NNS|JJ><NN>*?<CC>?<NN|NNS|JJ>?<NN>*?}
+                 ORSCON: {<NN|JJ><CC><NN|JJ>}
+                 CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
+                 SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
 
-                SHRTCHK: {<RBS|JJS><NN>+<SINGHYP|HYPCON>}
-              """
+    #            """
+    # patterns = """
+    #              NP: {<DT>?<JJ>*<NN|NNS>}
+    #              PP: {<IN><NP>}
+    #              ADVP:{<RBS|JJS><NP|CLAUSE|PP>}
+    #              CHUNK: {<ADVP><NP|PP>+}
+    #            """
               # """CHUNK: {<RBS|JJS><NN.?><NN.?>*?<IN>?<DT>?<NN>?<IN>?<DT>?<NN.?>?<NN.?>*?<NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
               #           """SML: {<NN><NN><NN>+<INNER>?}
     # patterns = """CHUNK: {<RBS><NN>}""" {(<RBS>,<JJS>)<NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?}
     # {<RBS|JJS|NN><NN><IN><DT><NN><IN><DT><NN>*<NNP>?<NN|JJ>?<CC>?<NN|JJ>?}
     #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
+                    # # SHRTCHK: {<RBS|JJS><NN>+<NN|ORSCON>}
+                    # INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
+                    # ORSCON: {<NN|JJ><CC><NN|JJ>}
+                    # CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
+                    # NP: {<DT|JJ|NN>+}
+
 
     parser = nltk.RegexpParser(patterns)
     trees = []
-    keywords = ['best', 'performance', 'actor', 'actress']
+    keywords = {'best','performance', 'motion', 'television', 'series', 'music', 'artist', 'film', 'actor', 'actress', 'musical',
+                'comedy', 'album', 'lead', 'director', 'original', 'language', 'foreign', 'actress', 'actor', 'singer', 'musician', 'feature',
+                'award', 'awards', 'drama', 'rap', 'metal', 'rock', 'mini-seris', 'supporting'}
+    n_total = 0
     for tweet in tweets:
+        if any(key in tweet for key in keywords):
+            tweet = list(filter(lambda a: a != '-', tweet))
+            if len(nltk.pos_tag(tweet))!=0:
+                # for tok in range(len(tweet)):
+                #     if tweet[tok] =='-':
+                #         tweet[tok] = 'HYP'
+                tree = parser.parse(nltk.pos_tag(tweet))
+                # print (tweet)
+                for subtree in tree.subtrees():
+                    if subtree.label() == 'CHUNK' or subtree.label() == 'SHRTCHK' or subtree.label() == 'CHUNKNP':
+                        n_total += 1
+                        trees.append(subtree)
+                        print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
 
-        if len(nltk.pos_tag(tweet))!=0:
-            for tok in range(len(tweet)):
-                if tweet[tok] =='-':
-                    tweet[tok] = 'HYP'
-            tree = parser.parse(nltk.pos_tag(tweet))
-            # print (tweet)
-            for subtree in tree.subtrees():
-                if subtree.label() == 'CHUNK' or subtree.label() == 'SHRTCHK':
-                    trees.append(subtree)
-                    print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
+    occ = Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP ','') for tree in trees])
 
-    print (Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP','-') for tree in trees]))
-    occ = Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP','-') for tree in trees])
-    nummer = 2
     num = 0
-    while num != -1:
-        awards = []
-        # num = int(input("How Many? -> "))
-        for key, val in occ.items():
-            # if key[-1] == '-':
-            #     key[-1] = ''
-            if val > nummer and val<1000:
-                awards.append(key)
-                print (key)
-        num = -1
+    awards = []
+    # num = int(input("How Many? -> "))
+    for key, val in occ.items():
+        p_sc = 0
+        for word in keywords:
+            if word in key.split():
+                n_total += 1
+                occ[key] += 1
+        for word in key.split():
+            if word not in keywords:
+                if occ[key] > 0:
+                    n_total -= 1
+                    occ[key] -= 1
+    nummer = n_total*0.003
+    print ("Num thresh: " + str(nummer))
+    for key,val in occ.items():
+        if occ[key] > nummer:
+            awards.append(key)
+            print (key)
+
+    print (occ)
+
+    print (len(awards))
     return awards
 
 def write_file(lst_of_years):
@@ -249,7 +286,7 @@ def get_hosts(year):
     return hosts
 
 def get_awards(year):
-    return reg_chunker(get_cleaned_tweets(2013))
+    return reg_chunker(get_cleaned_tweets(year))
 
 def main():
     '''
@@ -257,7 +294,7 @@ def main():
         after processing. REMOVE after development or if modifying preprocessing
         TODO
     '''
-    write_file([2015])
+    # write_file([2015])
     # tweets = get_cleaned_tweets(2013)
 
     '''
@@ -286,8 +323,8 @@ def main():
     reg_chunker(get_cleaned_tweets(2015))
 
 
-    res = get_hosts(2013)
-    print(res)
+    # res = get_hosts(2013)
+    # print(res)
     # res = get_hosts(2013)
     # print(res)
     # awards = get_clean_awards()
@@ -297,7 +334,7 @@ def main():
 
 
 
-    tweets = get_cleaned_tweets(2013)
+    # tweets = get_cleaned_tweets(2013)
 
     # for tweet in tweets:
         # if any('best' in word for word in tweet):
