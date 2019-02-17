@@ -2,18 +2,28 @@ from nltk.corpus import stopwords
 import csv
 import re
 import nltk
-
 from collections import Counter
 from math import floor, ceil
-
 import os.path
 import json
+import time
 
-import small_helper_methods
-from scipy._lib.decorator import getfullargspec
 
-import small_helper_methods as smh
-import KBLoader
+
+'''
+Libraries Needed:
+
+from nltk, averaged_perceptron_tagger
+
+
+
+
+
+'''
+
+
+
+from src import small_helper_methods
 
 LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
@@ -77,7 +87,6 @@ def clean_grammar(tweets):
     for tweet in tweets:
         filtered = [w for w in tweet if w in words]
         filtered_sentences.append(filtered)
-    print(filtered_sentences[:10])
     return filtered_sentences
 
 def clean_stopwords(tweets):
@@ -88,7 +97,7 @@ def clean_stopwords(tweets):
     filtered_sentences = []
     stopWords = create_stop_words()
     for tweet in tweets:
-        filtered = [w for w in tweet if not w in stopWords]
+        filtered = [w.lower() for w in tweet if not w in stopWords]
         filtered_sentences.append(filtered)
     return filtered_sentences
 
@@ -168,7 +177,6 @@ def ngram_freq(tweets, word_list, alpha, beta = 10000):
                         dict_names[pot_name] +=1
                     else:
                         dict_names[pot_name] = 1
-
     magic_constant1 = alpha*num_tweets_with_word #TODO take another look at this.
     magic_constant2 = beta*num_tweets_with_word
     for key, val in dict_names.items():
@@ -176,8 +184,8 @@ def ngram_freq(tweets, word_list, alpha, beta = 10000):
             # host_selection.append(str(key) + str(val))
             word_selection.append(str(key).replace('_',' '))
 
-    print(num_tweets_with_word)
-    print(word_list, word_selection)
+    # print(num_tweets_with_word)
+    # print(word_list, word_selection)
     return dict_names
 
 def reg_chunker(tweets):
@@ -197,9 +205,9 @@ def reg_chunker(tweets):
     n_total = 0
     tot_tweets = len(tweets)
     for i,tweet in enumerate(tweets):
-        perc = (float(i)/tot_tweets)*100
-        if i%100000.0 == 0:
-            print (str(perc) + '% Complete')
+        # perc = (float(i)/tot_tweets)*100
+        # if i%100000.0 == 0:
+            # print (str(perc) + '% Complete')
         if any(key in tweet for key in keywords):
             tweet = list(filter(lambda a: a != '-', tweet))
             if len(nltk.pos_tag(tweet))!=0:
@@ -224,19 +232,23 @@ def reg_chunker(tweets):
                     occ[key] /= 2
     n_total = sum(occ.values())
     nummer = ceil(n_total*0.002)
-    print ("Num thresh: " + str(nummer) + " Total: " + str(n_total))
+    # print ("Num thresh: " + str(nummer) + " Total: " + str(n_total))
     for key,val in occ.items():
         if occ[key] > nummer:
             awards.append(key)
-            print (key)
+            # print (key)
 
-    print (len(awards))
+    # print (len(awards))
     return awards
 
 
 
 def get_awards(year):
-    return reg_chunker(get_cleaned_tweets(year))
+    start = time.time()
+    result = reg_chunker(get_cleaned_tweets(year, 'grammar'))
+    end = time.time()
+    print('awards time: {0:.2f}s for {1}'.format(end - start, year))
+    return result
 
 
 def tweet_contains_word(tweet, lst_of_keywords):
@@ -304,7 +316,7 @@ def remove_words_from_tweet(tweet, lst):
 def compute_bigram_hosts(year, any_filter_word, alpha):
     hosts = []
     dict_names = dict()
-    cleaned_tweets = get_cleaned_tweets(year)
+    cleaned_tweets = get_cleaned_tweets(year, 'stopwords')
     num_tweets_with_word = 0
     for tweet in cleaned_tweets:
         if any(re.search(any_filter_word, word) for word in tweet):
@@ -345,9 +357,9 @@ def get_nominees_helper(all_awards, tweets):
         pot_winners = []
         winners = []
 
-        print('--------------!---------------------------------------------------------')
-
-        print(LIST_OF_AWARDS[idx])
+        # print('--------------!---------------------------------------------------------')
+        #
+        # print(LIST_OF_AWARDS[idx])
 
         if match_person(look_phrase[0]):
             if len(look_phrase) > 1:
@@ -360,7 +372,7 @@ def get_nominees_helper(all_awards, tweets):
                 else:
                     if not re.search('motion', look_phrase[1]):
                         look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1]
-        print(look_phrase[0])
+        # print(look_phrase[0])
         num_tweets_with_word = 0
         for tweet in tweets:
             if tweet_contains_all_words(tweet, look_phrase[0].split(' ')):
@@ -427,7 +439,7 @@ def get_nominees_helper(all_awards, tweets):
                 cand = pot_winners[j]
                 if cand not in ['best', 'drama', 'actor', 'actress', 'cecil']:
                     lst = [movie for movie in kb_actors if re.search(cand + ' ', movie)]
-                    print('candidate:', cand, lst)
+                    # print('candidate:', cand, lst)
                     if len(lst) < 1:
                         lst = [movie for movie in kb_actors if re.search(cand, movie)]
                     # print(cand+'   ---list: ' ,lst)
@@ -444,16 +456,16 @@ def get_nominees_helper(all_awards, tweets):
                             break
                     if len(lst) > 0 and len(lst) < 6:
                         winners.append(lst)
-        if len(winners) > 0:
-            print('potential nominees: ', pot_winners)
-            print(winners)
-            print('# Winners: ', winners)
-            print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
-        else:
-            print("FAILED#$")
-            print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
+        # if len(winners) > 0:
+        #     print('potential nominees: ', pot_winners)
+        #     print(winners)
+        #     print('# Winners: ', winners)
+        #     print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
+        # else:
+        #     print("FAILED#$")
+        #     print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
         winners = [win[0] for win in winners]
-        print(winners)
+        # print(winners)
 
         if len(winners) > 0:
             selected_winners[LIST_OF_AWARDS[idx]] = winners
@@ -490,13 +502,13 @@ def get_presenter_helper(all_awards, tweets, calc_winners):
             num_tweets_with_word = 0
             first_name = winner.split(' ')[0]
             if match_person(look_phrase[0]):
-                count = sum([1 for val in get_kb_actors() if re.search(first_name, val)])
+                count = sum([1 for val in small_helper_methods.get_kb_actors() if re.search(first_name, val)])
                 # print('first_name: '+first_name+' --scount: '+str(count))
                 if count > 5:
                     if len(winner.split(' ')) > 1:
                         first_name = winner.split(' ')[1]
             else:
-                count = sum([1 for val in get_kb_movies() if re.search(first_name, val)])
+                count = sum([1 for val in small_helper_methods.get_kb_movies() if re.search(first_name, val)])
                 # print('first_name: ' + first_name + ' --count: ' + str(count))
                 if count > 3:
                     if len(winner.split(' ')) > 1:
@@ -529,7 +541,7 @@ def get_presenter_helper(all_awards, tweets, calc_winners):
         # print('pot winners:' ,pot_winners)
         calculated_presentors = []
         for val in pot_winners:
-            for actor in get_kb_actors():
+            for actor in small_helper_methods.get_kb_actors():
                 if re.search(val, actor) and val not in winner:
                     if val not in calculated_presentors:
                         calculated_presentors.append(val)
@@ -585,13 +597,13 @@ def subrat_get_presenters(all_awards, tweets):
         dict_names = dict()
         pot_winners = []
         winners = []
-
-        print('--------------!---------------------------------------------------------')
-
-
-        print(LIST_OF_AWARDS[idx])
-        # print(len(look_phrase))
-        print(look_phrase[0])
+        #
+        # print('--------------!---------------------------------------------------------')
+        #
+        #
+        # print(LIST_OF_AWARDS[idx])
+        # # print(len(look_phrase))
+        # print(look_phrase[0])
 
         num_tweets_with_word = 0
         for tweet in tweets:
@@ -638,21 +650,21 @@ def subrat_get_presenters(all_awards, tweets):
                         break
                 if len(lst) > 0 and len(lst) < 6:
                     winners.append(lst)
-        if len(winners) > 0:
-            print('potential presenter: ',pot_winners)
-            print(winners)
-            print('# Winners: ', winners)
-            print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'] )
-        else:
-            print("FAILED#$")
-            print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'])
+        # if len(winners) > 0:
+        #     print('potential presenter: ',pot_winners)
+        #     print(winners)
+        #     print('# Winners: ', winners)
+        #     print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'] )
+        # else:
+        #     print("FAILED#$")
+        #     print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'])
         winners = [win[0] for win in winners]
-        print(winners)
+        # print(winners)
 
         if len(winners) > 0:
             selected_winners[LIST_OF_AWARDS[idx]] = winners
         else:
-            selected_winners[LIST_OF_AWARDS[idx]] = ['a']
+            selected_winners[LIST_OF_AWARDS[idx]] = ['na']
 
     return selected_winners
 
@@ -701,7 +713,6 @@ def subrat_get_winner(all_awards, tweets):
                             dict_names[pot_name] += 1
                         else:
                             dict_names[pot_name] = 1
-                            # num_tweets_with_word = 0
         magic_constant = .28 * num_tweets_with_word
         for key, val in dict_names.items():
             if val > magic_constant:
@@ -786,6 +797,7 @@ def subrat_get_winner(all_awards, tweets):
     return selected_winners
 
 def get_winner(year):
+    start = time.time()
     if os.path.isfile('calculated_winners'+year+'.json'):
         print('loading cached calculated winners')
         f = open('calculated_winners'+year+'.json', 'r')
@@ -793,29 +805,38 @@ def get_winner(year):
         f.close()
     else:
         print('running get_winner and caching')
-        tweets = get_cleaned_tweets(year)
+
+        tweets = get_cleaned_tweets(year, 'stopwords')
         hardcoded_awards = get_hardcoded_awards()
         selected_winners = subrat_get_winner(hardcoded_awards, tweets)
-
+        cach_start = time.time()
         json_data = json.dumps(selected_winners)
         f = open('calculated_winners'+year+'.json', "w")
         f.write(json_data)
         f.close()
+        print('get_winner caching : {0:.2f}seconds'.format( time.time() - cach_start))
+    end = time.time()
+    print('Total get_winner method call : {0:.2f}seconds'.format(end - start))
     return selected_winners
 
 def get_presenter(year):
-    tweets = get_cleaned_tweets(year)
+    start = time.time()
+    tweets = get_cleaned_tweets(year, 'stopwords')
     hardcoded_awards = get_hardcoded_awards()
     selected_winners = get_winner(year)
+    end = time.time()
+    print('Presenters : {0:.2f} seconds for {1}'.format(end - start, year))
     return get_presenter_helper(hardcoded_awards, tweets, selected_winners)
     # return subrat_get_presenters(hardcoded_awards, tweets)
 
 def get_nominee(year):
-    tweets = get_cleaned_tweets(year)
+    start = time.time()
+    tweets = get_cleaned_tweets(year, 'stopwords')
     hardcoded_awards = get_hardcoded_awards()
-    # selected_winners = get_winner(year)
-    return get_nominees_helper(hardcoded_awards, tweets)
-    # return subrat_get_presenters(hardcoded_awards, tweets)
+    result = get_nominees_helper(hardcoded_awards, tweets)
+    end = time.time()
+    print('Nominees : {0:.2f} seconds for {1}'.format(end - start, year))
+    return result
 
 def main():
     '''
