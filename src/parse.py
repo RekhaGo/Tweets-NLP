@@ -38,43 +38,58 @@ def write_file(lst_of_years):
     for val in lst_of_years:
         print('Writing data to file from year: ' + val)
         tweets = load_data('gg' + str(val) + '.json')
-        cleaned_tweets = clean(tweets)  # list of list of words that compose the phrase
+        cleaned_tweets_grammar = clean_grammar(tweets)  # list of list of words that compose the phrase
+        cleaned_tweets_stopwords = clean_stopwords(tweets)  # list of list of words that compose the phrase
         '''
             Writing preprocessed data to file
             Comment below before turn-in
             TODO
         '''
-        with open('cleaned' + str(val) + '.csv', 'w') as f:
+        with open('cleaned_grammar_' + str(val) + '.csv', 'w') as f:
             writer = csv.writer(f)
-            writer.writerows(cleaned_tweets)
+            writer.writerows(cleaned_tweets_grammar)
+        with open('cleaned_stopwords_' + str(val) + '.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerows(cleaned_tweets_stopwords)
 
-def get_cleaned_tweets(year):
-    cleaned_tweets = []
-    with open('cleaned' + str(year) + '.csv', 'r') as f:
-        reader = csv.reader(f)
-        cleaned_tweets = list(reader)
-    return cleaned_tweets
+def get_cleaned_tweets(year, grammar_or_stopwords):
+    '''
+    args for grammar_or_stopwords
+    'grammar'
+    'stopwords'
+    '''
+    try:
+        with open('cleaned_'+str(grammar_or_stopwords)+'_' + str(year) + '.csv', 'r') as f:
+            reader = csv.reader(f)
+            cleaned_tweets = list(reader)
+        return cleaned_tweets
+    except:
+        print("FILE NOT FOUND ERROR reading tweets from file "+'cleaned_'+str(grammar_or_stopwords)+'_' + str(year) + '.csv')
 
-def clean(tweets):
+def clean_grammar(tweets):
     '''
         Filters out stop words
         - can take other logic here
     '''
-    print('cleaning data...')
     filtered_sentences = []
-
-    #removing stop words from nltk corpus
     words = set(nltk.corpus.words.words())
     words.add("-")
-
-    stopWords = create_stop_words()
     for tweet in tweets:
-
-        #filtered = [w for w in tweet if not w in stopWords]
         filtered = [w for w in tweet if w in words]
-
         filtered_sentences.append(filtered)
     print(filtered_sentences[:10])
+    return filtered_sentences
+
+def clean_stopwords(tweets):
+    '''
+        Filters out stop words
+        - can take other logic here
+    '''
+    filtered_sentences = []
+    stopWords = create_stop_words()
+    for tweet in tweets:
+        filtered = [w for w in tweet if not w in stopWords]
+        filtered_sentences.append(filtered)
     return filtered_sentences
 
 def get_clean_awards():
@@ -95,7 +110,6 @@ def create_stop_words():
     stopWords.add('golden')
     stopWords.add('globe')
     stopWords.add('#goldenglobes')
-
     return stopWords
 
 '''function to find most common (fraction = alpha) word-pair associations with respect to a particular word word_list
@@ -219,87 +233,25 @@ def reg_chunker(tweets):
     print (len(awards))
     return awards
 
-def write_file(lst_of_years):
-    for val in lst_of_years:
-        tweets = load_data('../data/gg'+str(val)+'.json')
-        cleaned_tweets = clean(tweets) #list of list of words that compose the phrase
-        print(len(cleaned_tweets))
-        '''
-            Writing preprocessed data to file
-            Comment below before turn-in
-            TODO
-        '''
-        with open('cleaned'+str(val)+'.csv', 'w') as f:
-            writer = csv.writer(f)
-            writer.writerows(cleaned_tweets)
-
-def get_cleaned_tweets(year):
-    cleaned_tweets = []
-    with open('cleaned'+str(year)+'.csv', 'r') as f:
-        print("Getting Cleaned Tweets.....")
-        reader = csv.reader(f)
-        cleaned_tweets = list(reader)
-    return cleaned_tweets
-
-
-
-
-def get_hosts(year):
-    cleaned_tweets = get_cleaned_tweets(year)
-    word_list = ['hosts', 'host', 'hosting']
-    hosts = []
-    dict_names = dict()
-
-    # Determining a good magic constant
-    num_tweets_with_word = 0
-
-    for tweet in cleaned_tweets:
-        if any(word in tweet for word in word_list):
-            if not 'next' in tweet:
-                num_tweets_with_word += 1
-                for i in range(len(tweet) - 1):
-                    pot_name = tweet[i] + '_' + tweet[i + 1]
-                    # print(pot_name)
-                    if pot_name in dict_names:
-                        dict_names[pot_name] += 1
-                    else:
-                        dict_names[pot_name] = 1
-    '''
-        Magic constant below is calculated as a percentage of total tweets, since 2015 is
-        much larger than 2013...
-    '''
-    magic_constant = .28 * num_tweets_with_word
-    for key, val in dict_names.items():
-        if val > magic_constant:
-            # hosts.append(str(key) + str(val))
-            hosts.append(str(key).replace('_', ' '))
-    return hosts
 
 
 def get_awards(year):
     return reg_chunker(get_cleaned_tweets(year))
-
-def get_nominees(year):
-    pass
-
-
 
 
 def tweet_contains_word(tweet, lst_of_keywords):
     if any(word in tweet for word in lst_of_keywords):
         return True
     return False
+
 def tweet_contains_all_words(tweet, lst_of_keywords):
     if all(word in tweet for word in lst_of_keywords):
         return True
     return False
 
 def filter_word_in_list(award, stop_words):
-    # lst_of_words= award.split(" ")
-    # filtered = [word for word in lst_of_words if (word not in stop_words) and word != '-']
     for word in stop_words:
         award = re.sub(word, ' ', award)
-
     return award
 
 
@@ -334,6 +286,7 @@ def match_movie(look_phrase_str):
             if not match_person(look_phrase_str):
                 return True
     return False
+
 def match_person(look_phrase_str):
     movie_key_words = ['director', 'actor', 'actress', 'demille']
     for word in movie_key_words:
@@ -870,16 +823,6 @@ def main():
         after processing. REMOVE after development or if modifying preprocessing
         TODO
     '''
-
-
-    # write_file([2013]);
-    tweets = get_cleaned_tweets(2013)
-    get_presenter('2013')
-
-
-
-
-
 
 if __name__ == '__main__':
     main()
