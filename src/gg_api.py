@@ -34,8 +34,7 @@ def get_presenters(year):
     '''Presenters is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
-    # Your code here
-    return presenters
+    return parse.get_presenter(year)
 
 def pre_ceremony():
     '''This function loads/fetches/processes any data your program

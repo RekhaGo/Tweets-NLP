@@ -25,7 +25,7 @@ def get_kb_lists():
     SELECT DISTINCT ?name 
     WHERE 
     {
-      ?film wdt:P31 wd:Q11424.
+       
       ?film wdt:P161 ?cast.
       ?cast wdt:P373 ?name.
       ?film wdt:P577 ?date .

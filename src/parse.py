@@ -3,6 +3,9 @@ from nltk.corpus import stopwords
 import csv
 import re
 import nltk
+import os.path
+import json
+
 from scipy._lib.decorator import getfullargspec
 
 from src import small_helper_methods as smh
@@ -34,6 +37,13 @@ def get_kb_directors():
 
 
 
+class TweetParser:
+    def __init__(self):
+        nominees = dict()
+        presenters = dict()
+        awards = []
+        selected_winners = dict()
+        hosts = []
 
 
 
@@ -267,13 +277,215 @@ def match_person(look_phrase_str):
             return True
     return False
 
-def subrat_get_winner(all_awards, tweets):
+def remove_words_from_tweet(tweet, lst):
+    # lst = lst + ['supporting', 'actress', 'actor']
+    filtered = []
+    for word in tweet:
+        if not any([re.search(val, word) for val in lst]):
+            filtered.append(word)
+    return filtered
+
+def get_presenter_helper(all_awards, tweets, calc_winners):
+    # print(calc_winners)
+    # json_data = get_HARDCODED_AWARD_DATA('2013')
+    results_dict = dict()
+    for idx in range(int(len(all_awards))):
+        dict_names = dict()
+        pot_winners = []
+        # print('----------------------------------------------------------------')
+        # print('award :',all_awards[idx])
+        winner = calc_winners[LIST_OF_AWARDS[idx]]
+
+        look_phrase = all_awards[idx].split(' - ')
+        if len(winner) >0:
+            if match_person(look_phrase[0]):
+                if len(look_phrase) > 1:
+                    look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1].split(' ')[0]
+            else:
+                if len(look_phrase) > 1:
+                    # print(look_phrase)
+                    if re.search('comedy', look_phrase[1]):
+                        look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1].split(' ')[0]
+                    else:
+                        if not re.search('motion', look_phrase[1]):
+                            look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1]
+
+            num_tweets_with_word = 0
+            first_name = winner.split(' ')[0]
+            if match_person(look_phrase[0]):
+                count = sum([1 for val in get_kb_actors() if re.search(first_name, val)])
+                # print('first_name: '+first_name+' --scount: '+str(count))
+                if count > 5:
+                    if len(winner.split(' ')) > 1:
+                        first_name = winner.split(' ')[1]
+            else:
+                count = sum([1 for val in get_kb_movies() if re.search(first_name, val)])
+                # print('first_name: ' + first_name + ' --count: ' + str(count))
+                if count > 3:
+                    if len(winner.split(' ')) > 1:
+                        if not re.search('\d', winner.split(' ')[1]):
+                            first_name = winner.split(' ')[1]
+        else:
+            first_name = look_phrase[0]
 
 
+        for tweet in tweets:
+                if any([re.search('present', val) for val in tweet]):
+                    if any([re.search(first_name, val) for val in tweet]):
+                        # print('search with: '+first_name+' --',tweet)
+                        num_tweets_with_word += 1
+                        for i in range(len(tweet) - 1):
+                            # pot_name = tweet[i]
+                            pot_name = tweet[i] + '_' + tweet[i + 1]
+                            # print(pot_name)
+                            if not re.search(pot_name.split('_')[0], winner):
+                                if pot_name in dict_names:
+                                    dict_names[pot_name] += 1
+                                else:
+                                    dict_names[pot_name] = 1
+                                    # num_tweets_with_word = 0
+        magic_constant = .18 * num_tweets_with_word #was .18 before
+        for key, val in dict_names.items():
+            if val > magic_constant:
+                # winners.append(str(key) + str(val))
+                pot_winners.append(str(key).replace('_', ' '))
+        # print('pot winners:' ,pot_winners)
+        calculated_presentors = []
+        for val in pot_winners:
+            for actor in get_kb_actors():
+                if re.search(val, actor) and val not in winner:
+                    if val not in calculated_presentors:
+                        calculated_presentors.append(val)
+        # if len(calculated_presentors) == 0:
+        #     # print('*&*&*&*&*&*&*&*&*&*&*&*& len = 0, searching with ', first_name)
+        #     #One more pass in the case of an empty list without the pattern 'present'
+        #     for tweet in tweets:
+        #         if any([re.search('', val) for val in tweet]):
+        #             if any([re.search(first_name, val) for val in tweet]):
+        #                 # print('*&*&*&*&*&*& search with: ' + first_name + ' --', tweet)
+        #                 num_tweets_with_word += 1
+        #                 for i in range(len(tweet) - 1):
+        #                     # pot_name = tweet[i]
+        #                     pot_name = tweet[i] + '_' + tweet[i + 1]
+        #                     # print(pot_name)
+        #                     if not re.search(pot_name.split('_')[0], winner):
+        #                         if pot_name in dict_names:
+        #                             dict_names[pot_name] += 1
+        #                         else:
+        #                             dict_names[pot_name] = 1
+        #                             # num_tweets_with_word = 0
+        #     magic_constant = .18 * num_tweets_with_word
+        #     for key, val in dict_names.items():
+        #         if val > magic_constant:
+        #             # winners.append(str(key) + str(val))
+        #             pot_winners.append(str(key).replace('_', ' '))
+        #     # print('pot winners:', pot_winners)
+        #     calculated_presentors = []
+        #     for val in pot_winners:
+        #         for actor in get_kb_actors():
+        #             if re.search(val, actor) and val not in winner:
+        #                 if val not in calculated_presentors:
+        #                     calculated_presentors.append(val)
+        # print(calculated_presentors)
+        if len(calculated_presentors) > 0:
+            results_dict[LIST_OF_AWARDS[idx]] = calculated_presentors
+        else:
+            results_dict[LIST_OF_AWARDS[idx]] = ['a']
+        # print('######## presenters: ', calculated_presentors)
+        # print('######Actual presenters: ', json_data[LIST_OF_AWARDS[idx]]['presenters'])
+        # print('~~~~~~~Award Receiver', winner)
+    return results_dict
+
+
+
+def subrat_get_presenters(all_awards, tweets):
     kb_actors = get_kb_actors()
     kb_directors = get_kb_directors()
     kb_movies = get_kb_movies()
-    json_data = get_HARDCODED_AWARD_DATA('2015')
+    json_data = get_HARDCODED_AWARD_DATA('2013')
+    selected_winners = dict()
+    for idx in range(int(len(all_awards))):
+        look_phrase = all_awards[idx].split(' - ')
+        dict_names = dict()
+        pot_winners = []
+        winners = []
+
+        print('--------------!---------------------------------------------------------')
+
+
+        print(LIST_OF_AWARDS[idx])
+        # print(len(look_phrase))
+        print(look_phrase[0])
+
+        num_tweets_with_word = 0
+        for tweet in tweets:
+            if tweet_contains_all_words(tweet, look_phrase[0].split(' ')):
+                if any([re.search('present', val) for val in tweet]):
+                    tweet = remove_words_from_tweet(tweet, look_phrase[0].split(' '))
+                    num_tweets_with_word += 1
+                    for i in range(len(tweet) - 1):
+                        # pot_name = tweet[i]
+                        pot_name = tweet[i] + '_' + tweet[i + 1]
+                        # print(pot_name)
+                        if pot_name in dict_names:
+                            dict_names[pot_name] += 1
+                        else:
+                            dict_names[pot_name] = 1
+                            # num_tweets_with_word = 0
+        magic_constant = .28 * num_tweets_with_word
+        for key, val in dict_names.items():
+            if val > magic_constant:
+                # winners.append(str(key) + str(val))
+                pot_winners.append(str(key).replace('_', ' '))
+        # print(pot_winners)
+
+        # if match_person(look_phrase[0]):
+        # print('&*', pot_winners)
+        for j in range(len(pot_winners)):
+            cand = pot_winners[j]
+            if cand not in ['best', 'drama', 'actor', 'actress', 'cecil']:
+                lst = [movie for movie in kb_actors if re.search(cand+' ', movie)]
+                print('candidate:', cand, lst)
+                if len(lst) < 1 :
+                    lst = [movie for movie in kb_actors if re.search(cand, movie)]
+                # print(cand+'   ---list: ' ,lst)
+                counter = j
+                while len(lst) > 0:
+                    if (counter < len(pot_winners)-1):
+                        cand += (' '+pot_winners[counter+1])
+                        child_lst = [movie for movie in kb_actors if re.search(cand, movie)]
+                        # print('candidate child:', cand, lst)
+                        if (len(child_lst) > 0):
+                            lst = child_lst
+                        counter+=1
+                    else:
+                        break
+                if len(lst) > 0 and len(lst) < 6:
+                    winners.append(lst)
+        if len(winners) > 0:
+            print('potential presenter: ',pot_winners)
+            print(winners)
+            print('# Winners: ', winners)
+            print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'] )
+        else:
+            print("FAILED#$")
+            print('Actual_Presenter: ', json_data[LIST_OF_AWARDS[idx]]['presenters'])
+        winners = [win[0] for win in winners]
+        print(winners)
+
+        if len(winners) > 0:
+            selected_winners[LIST_OF_AWARDS[idx]] = winners
+        else:
+            selected_winners[LIST_OF_AWARDS[idx]] = ['a']
+
+    return selected_winners
+
+def subrat_get_winner(all_awards, tweets):
+    #TODO take out parentheses of winners
+    kb_actors = get_kb_actors()
+    kb_directors = get_kb_directors()
+    kb_movies = get_kb_movies()
+    json_data = get_HARDCODED_AWARD_DATA('2013')
     selected_winners = dict()
 
     for idx in range(int(len(all_awards))):
@@ -294,7 +506,7 @@ def subrat_get_winner(all_awards, tweets):
                 else:
                     if not re.search('motion', look_phrase[1]):
                         look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1]
-
+        #
         # print('--------------!---------------------------------------------------------')
         #
         #
@@ -307,7 +519,7 @@ def subrat_get_winner(all_awards, tweets):
             if tweet_contains_all_words(tweet, look_phrase[0].split(' ')):
                 if tweet_contains_word(tweet, ['wins', 'winner', 'won']):
                     num_tweets_with_word += 1
-                    for i in range(len(tweet) - 1):
+                    for i in range(len(tweet) - 1): #TODO remove this -1 and check acc again :P
                         pot_name = tweet[i]
                         # print(pot_name)
                         if pot_name in dict_names:
@@ -326,7 +538,7 @@ def subrat_get_winner(all_awards, tweets):
                 if candidate not in look_phrase[0].split(' ') and candidate not in ['motion', 'picture','winner','best', 'wins', 'won', 'actor','actress', 'comedy', 'musical', '-']:
 
                     lst = [movie for movie in kb_movies if re.search(candidate + ' ', movie)]
-                    # print('candidate:', candidate, lst)
+                    # print('cand:', candidate, lst)
                     if (len(lst) < 1):
                         lst= []
                         for movie in kb_movies:
@@ -334,6 +546,7 @@ def subrat_get_winner(all_awards, tweets):
                                 if len(movie.split(' ')) < 2:
                                     lst.append(movie)
                     if len(lst) > 0 and len(lst) < 5:
+
                         winners.append(lst)
                     else:
                         lst = []
@@ -342,6 +555,7 @@ def subrat_get_winner(all_awards, tweets):
                                 if len(movie.split(' ')) < 2:
                                     lst.append(movie)
                         if len(lst) > 0 and len(lst) < 5:
+
                             winners.append(lst)
                         else:
                             lst = []
@@ -349,11 +563,14 @@ def subrat_get_winner(all_awards, tweets):
                                 if re.search(' '+candidate, movie):
                                     lst.append(movie)
                             if len(lst) > 0 and len(lst) < 5:
+
                                 winners.append(lst)
                     if len(winners) < 1:
                         lst.append(candidate)
+                        lst = [w for w in lst if w in kb_movies]
                         if len(lst) > 0 and len(lst) < 5:
-                            winners.append(lst)
+                            # print('candidate:', candidate, lst)
+                            winners.append([w for w in lst if w in kb_movies])
         if match_person(look_phrase[0]):
             # print('&*', pot_winners)
             for j in range(len(pot_winners)):
@@ -386,14 +603,37 @@ def subrat_get_winner(all_awards, tweets):
         #     print("FAILED#$")
         #     print('Actual_winner: ', json_data[LIST_OF_AWARDS[idx]]['winner'])
         if len(winners) > 0:
+            # print(winners[0][0].split('(')[0])
             selected_winners[LIST_OF_AWARDS[idx]] = winners[0][0]
+        else:
+            selected_winners[LIST_OF_AWARDS[idx]] = ' '
     # print(selected_winners)
     return selected_winners
 
 def get_winner(year):
+    if os.path.isfile('calculated_winners'+year+'.json'):
+        print('loading cached calculated winners')
+        f = open('calculated_winners'+year+'.json', 'r')
+        selected_winners = json.load(f)
+        f.close()
+    else:
+        print('running get_winner and caching')
+        tweets = get_cleaned_tweets(year)
+        hardcoded_awards = get_hardcoded_awards()
+        selected_winners = subrat_get_winner(hardcoded_awards, tweets)
+
+        json_data = json.dumps(selected_winners)
+        f = open('calculated_winners'+year+'.json', "w")
+        f.write(json_data)
+        f.close()
+    return selected_winners
+
+def get_presenter(year):
     tweets = get_cleaned_tweets(year)
     hardcoded_awards = get_hardcoded_awards()
-    return subrat_get_winner(hardcoded_awards, tweets)
+    selected_winners = get_winner(year)
+    return get_presenter_helper(hardcoded_awards, tweets, selected_winners)
+    # return subrat_get_presenters(hardcoded_awards, tweets)
 
 def main():
     '''
@@ -402,12 +642,14 @@ def main():
         TODO
     '''
     # write_file([2013]);
-    # tweets = get_cleaned_tweets(2015)
+    tweets = get_cleaned_tweets(2013)
 
-    '''
-    Getting the Hosts
-    # '''
-    # hardcoded_awards = get_hardcoded_awards()
+
+
+    # get_winner('2013')
+    get_presenter('2013')
+
+
     # subrat_get_winner(hardcoded_awards, tweets)
 
     # actors_kb = get_kb_actors()
@@ -417,8 +659,11 @@ def main():
     #
 
     # for tweet in tweets:
-    #     if 'fargo' in tweet and 'wins' in tweet:
+    #     if 'leno' in tweet:
     #         print(tweet)
+
+        # if 'fox' in tweet:
+        #     print(tweet)
 
     # get_winner('2015')
 
@@ -427,8 +672,8 @@ def main():
 
 
     # print(get_kb_directors())
-    # for val in get_kb_movies():
-    #     if re.match('transp', val):
+    # for val in get_kb_actors():
+    #     if re.match('fallon', val):
     #         print(val)
 
 
