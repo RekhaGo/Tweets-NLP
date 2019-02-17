@@ -139,13 +139,12 @@ def ngram_freq(tweets, word_list, alpha, beta = 10000):
     return dict_names
 
 def reg_chunker(tweets):
-
     patterns = """
                  INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN|NNS|JJ><NN>*?<CC>?<NN|NNS|JJ>?<NN>*?<ORSCON>*}
                  ORSCON: {<NN|JJ><NN>*<CC><NN|JJ><NN>*}
                  CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
                  SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
-    #            """
+               """
 
 
     parser = nltk.RegexpParser(patterns)
@@ -187,6 +186,7 @@ def reg_chunker(tweets):
     for key,val in occ.items():
         if occ[key] > nummer:
             awards.append(key)
+            print (key)
 
     print (len(awards))
     return awards
