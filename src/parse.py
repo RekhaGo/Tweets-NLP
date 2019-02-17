@@ -139,96 +139,54 @@ def ngram_freq(tweets, word_list, alpha, beta = 10000):
     return dict_names
 
 def reg_chunker(tweets):
-    '''
-    best performance by an actor in a mini-series or motion picture made for television
-    [('best', 'RBS'), ('performance', 'NN'), ('by', 'IN'), ('an', 'DT'), ('actor', 'NN'),
-    ('in', 'IN'), ('a', 'DT'), ('mini-series', 'NNS'), ('or', 'CC'), ('motion', 'NN'), ('picture', 'NN'),
-    ('made', 'VBN'), ('for', 'IN'), ('television', 'NN')]
-    REQ TO ADD AFTER THE SECOND NN*
-    '''
-    # patterns = """
-    #             INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
-    #             ORSCON: {<NN|JJ><CC><NN|JJ>}
-    #             HYPCON: {<NNP><ORSCON>+}
-    #             SINGHYP: {<NNP><NN>}
-    #             CHUNK: {<RBS|JJS><INNER><SINGHYP|HYPCON>?}
-    #
-    #             SHRTCHK: {<RBS|JJS><NN>+<SINGHYP|HYPCON>}
-    # #           """
+
     patterns = """
                  INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN|NNS|JJ><NN>*?<CC>?<NN|NNS|JJ>?<NN>*?<ORSCON>*}
                  ORSCON: {<NN|JJ><NN>*<CC><NN|JJ><NN>*}
                  CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
                  SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
     #            """
-    # patterns = """
-    #              NP: {<DT>?<JJ>*<NN|NNS>}
-    #              PP: {<IN><NP>}
-    #              ADVP:{<RBS|JJS><NP|CLAUSE|PP>}
-    #              CHUNK: {<ADVP><NP|PP>+}
-    #            """
-              # """CHUNK: {<RBS|JJS><NN.?><NN.?>*?<IN>?<DT>?<NN>?<IN>?<DT>?<NN.?>?<NN.?>*?<NNP>?<NN.?|JJ.?>?<CC>?<NN.?|JJ.?>?}
-              #           """SML: {<NN><NN><NN>+<INNER>?}
-    # patterns = """CHUNK: {<RBS><NN>}""" {(<RBS>,<JJS>)<NN><IN><DT><NN><IN><DT><NN><NN>*<NNP>?<NN><NN>*?}
-    # {<RBS|JJS|NN><NN><IN><DT><NN><IN><DT><NN>*<NNP>?<NN|JJ>?<CC>?<NN|JJ>?}
-    #st = nltk.pos_tag("best performance by an actor in a motion picture - drama".split())
-                    # # SHRTCHK: {<RBS|JJS><NN>+<NN|ORSCON>}
-                    # INNER: {<NN><NN>*?<IN><DT><NN><IN><DT><NN><NN>*}
-                    # ORSCON: {<NN|JJ><CC><NN|JJ>}
-                    # CHUNK: {<RBS|JJS><INNER><NN|ORSCON>?}
-                    # NP: {<DT|JJ|NN>+}
-                    #SHRTCHK: {<RBS|JJS><NN|JJ><NN>+<NN|ORSCON>}
 
 
     parser = nltk.RegexpParser(patterns)
     trees = []
     keywords = {'best','performance', 'motion', 'television', 'series', 'music', 'artist', 'film', 'actor', 'actress', 'musical',
                 'comedy', 'album', 'lead', 'director', 'original', 'language', 'foreign', 'actress', 'actor', 'singer', 'musician', 'feature',
-                'award', 'awards', 'drama', 'mini-series', 'supporting'}
+                'award', 'awards', 'drama', 'supporting'}
     n_total = 0
     tot_tweets = len(tweets)
     for i,tweet in enumerate(tweets):
         perc = (float(i)/tot_tweets)*100
-        if floor(perc)%10.0 == 0:
+        if i%100000.0 == 0:
             print (str(perc) + '% Complete')
         if any(key in tweet for key in keywords):
             tweet = list(filter(lambda a: a != '-', tweet))
             if len(nltk.pos_tag(tweet))!=0:
-                # for tok in range(len(tweet)):
-                #     if tweet[tok] =='-':
-                #         tweet[tok] = 'HYP'
                 tree = parser.parse(nltk.pos_tag(tweet))
-                # print (tweet)
                 for subtree in tree.subtrees():
                     if subtree.label() == 'CHUNK' or subtree.label() == 'SHRTCHK' or subtree.label() == 'CHUNKNP':
                         n_total += 1
                         trees.append(subtree)
-                        #print (subtree.leaves(), tweet, nltk.pos_tag(tweet))
 
     occ = Counter([' '.join([x[0] for x in tree.leaves()]).replace('HYP ','') for tree in trees])
 
     num = 0
     awards = []
-    # num = int(input("How Many? -> "))
     for key, val in occ.items():
         p_sc = 0
         for word in keywords:
             if word in key.split():
-                n_total += 1
-                occ[key] += 1
+                occ[key] *= 2
         for word in key.split():
             if word not in keywords:
                 if occ[key] > 0:
-                    n_total -= 1
-                    occ[key] -= 1
-    nummer = ceil(n_total*0.008)
-    print ("Num thresh: " + str(nummer))
+                    occ[key] /= 2
+    n_total = sum(occ.values())
+    nummer = ceil(n_total*0.002)
+    print ("Num thresh: " + str(nummer) + " Total: " + str(n_total))
     for key,val in occ.items():
         if occ[key] > nummer:
             awards.append(key)
-            print (key)
-
-    print (occ)
 
     print (len(awards))
     return awards
@@ -324,7 +282,7 @@ def main():
     #calculate_words(cleaned_tweets, ['hosts', 'host'], 0.26)
     # names_dic = calculate_words(cleaned_tweets, ['award', 'awards', 'best'], 0.09)
     # ngram_freq(cleaned_tweets, ['award', 'awards', 'best'], 0.004, 0.01)
-    reg_chunker(get_cleaned_tweets(2013))
+    # reg_chunker(get_cleaned_tweets(2015))
 
 
     # res = get_hosts(2013)
