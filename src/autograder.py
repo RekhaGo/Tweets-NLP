@@ -147,7 +147,7 @@ def calc_score(result, answer):
     elif len_result == len_answer and len_intersection == len_answer:
         m = 1.0
     elif len_intersection == len_result:
-        # all results correspond to a correct answer, but some 
+        # all results correspond to a correct answer, but some
         # answers are missing
         m = 0.95
     elif len_intersection == len_answer:
@@ -222,9 +222,9 @@ def main(years, grading):
     pprint(scores)
 
 if __name__ == '__main__':
-    years = ['2013', '2015']
-    grading = ["hosts"]
-    # grading = ["hosts", "awards", "nominees", "presenters", "winner"]
+    years = ['2013','2015']
+    # grading = ["presenters"]
+    grading = ["hosts", "awards", "nominees", "presenters", "winner"]
 
     if len(sys.argv) > 1:
         if '2013' in sys.argv:
