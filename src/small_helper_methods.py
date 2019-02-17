@@ -8,14 +8,14 @@ def find_non_zero_mean(lst):
 
 def get_kb_movies():
     with open('kb_movies.txt', 'r') as filehandle:
-        movies = []
+        movies = set()
         for line in filehandle:
-            movies.append(line[:-1])
+            movies.add(line[:-1])
     return movies
 
 def get_kb_actors():
     with open('kb_actors.txt', 'r') as filehandle:
-        movies = []
+        movies = set()
         for line in filehandle:
-            movies.append(line[:-1])
+            movies.add(line[:-1])
     return movies
