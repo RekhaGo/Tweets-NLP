@@ -643,38 +643,8 @@ def main():
     '''
     # write_file([2013]);
     tweets = get_cleaned_tweets(2013)
-
-
-
-    # get_winner('2013')
     get_presenter('2013')
 
-
-    # subrat_get_winner(hardcoded_awards, tweets)
-
-    # actors_kb = get_kb_actors()
-    # for actor in actors_kb:
-    #     if re.search('costner', actor):
-    #         print(actor)
-    #
-
-    # for tweet in tweets:
-    #     if 'leno' in tweet:
-    #         print(tweet)
-
-        # if 'fox' in tweet:
-        #     print(tweet)
-
-    # get_winner('2015')
-
-
-
-
-
-    # print(get_kb_directors())
-    # for val in get_kb_actors():
-    #     if re.match('fallon', val):
-    #         print(val)
 
 
 if __name__ == '__main__':
