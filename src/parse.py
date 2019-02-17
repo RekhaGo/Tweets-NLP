@@ -1,4 +1,3 @@
-import json
 from nltk.corpus import stopwords
 import csv
 import re
@@ -10,47 +9,13 @@ from math import floor, ceil
 import os.path
 import json
 
+import small_helper_methods
 from scipy._lib.decorator import getfullargspec
 
 import small_helper_methods as smh
 import KBLoader
 
-
-
 LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
-
-def get_kb_movies():
-    with open('kb_movies.txt', 'r') as filehandle:
-        movies = []
-        for line in filehandle:
-            movies.append(line[:-1])
-    return movies
-
-def get_kb_actors():
-    with open('kb_actors.txt', 'r') as filehandle:
-        movies = []
-        for line in filehandle:
-            movies.append(line[:-1])
-    return movies
-
-def get_kb_directors():
-    with open('kb_directors.txt', 'r') as filehandle:
-        movies = []
-        for line in filehandle:
-            movies.append(line[:-1])
-    return movies
-
-
-
-class TweetParser:
-    def __init__(self):
-        nominees = dict()
-        presenters = dict()
-        awards = []
-        selected_winners = dict()
-        hosts = []
-
-
 
 
 def load_data(filename):
@@ -68,6 +33,28 @@ def load_data(filename):
         tweets.append(re.findall(r"[\w\#\@\-']+", tweet))
     return tweets
 
+
+def write_file(lst_of_years):
+    for val in lst_of_years:
+        print('Writing data to file from year: ' + val)
+        tweets = load_data('gg' + str(val) + '.json')
+        cleaned_tweets = clean(tweets)  # list of list of words that compose the phrase
+        '''
+            Writing preprocessed data to file
+            Comment below before turn-in
+            TODO
+        '''
+        with open('cleaned' + str(val) + '.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerows(cleaned_tweets)
+
+def get_cleaned_tweets(year):
+    cleaned_tweets = []
+    with open('cleaned' + str(year) + '.csv', 'r') as f:
+        reader = csv.reader(f)
+        cleaned_tweets = list(reader)
+    return cleaned_tweets
+
 def clean(tweets):
     '''
         Filters out stop words
@@ -75,9 +62,11 @@ def clean(tweets):
     '''
     print('cleaning data...')
     filtered_sentences = []
+
     #removing stop words from nltk corpus
     words = set(nltk.corpus.words.words())
     words.add("-")
+
     stopWords = create_stop_words()
     for tweet in tweets:
 
@@ -108,17 +97,6 @@ def create_stop_words():
     stopWords.add('#goldenglobes')
 
     return stopWords
-
-
-
-def print_tweets(tweets, num_tweets):
-    '''
-        Print helper for tweets, pass in tweets and number to display
-        print_tweets(cleaned_tweets, 3)
-    '''
-
-    for i in range(num_tweets):
-        print(tweets[i])
 
 '''function to find most common (fraction = alpha) word-pair associations with respect to a particular word word_list
     Arguments:
@@ -157,6 +135,7 @@ def calculate_words(tweets, word_list, alpha):
     print(num_tweets_with_word)
     print(word_list, word_selection)
     return dict_names
+
 
 def ngram_freq(tweets, word_list, alpha, beta = 10000):
     ngrams = [list(nltk.ngrams(tweet,9)) for tweet in tweets]
@@ -305,17 +284,12 @@ def get_nominees(year):
 
 
 
-def subrat_get_presenters():
-    pass
 
 def tweet_contains_word(tweet, lst_of_keywords):
     if any(word in tweet for word in lst_of_keywords):
         return True
     return False
 def tweet_contains_all_words(tweet, lst_of_keywords):
-    # print('list of key words: ', lst_of_keywords)
-
-
     if all(word in tweet for word in lst_of_keywords):
         return True
     return False
@@ -333,7 +307,6 @@ def get_hardcoded_awards(): #TODO compiling regex to possibly make it faster??
     stop_words = [' or ', ' in ', ' a ', ' made ', ' for ']
     clean_awards = []
     for award in LIST_OF_AWARDS:
-        # print(award)
         award = re.sub('^best .+ an\s', '', award)
         award = re.sub('best ', '', award)
         award = re.sub('television series', 'tv series', award)
@@ -343,13 +316,8 @@ def get_hardcoded_awards(): #TODO compiling regex to possibly make it faster??
         award = re.sub('series, mini-series ', '', award)
         award = re.sub('mini-series or motion picture made for tv', 'mini-seriestv', award)
         award = re.sub('cecil b. demille ', 'demille ', award)
-        # print('award: : ', award)
         award = re.sub('or motion picture made for tv', 'tv', award)
-
-        # award = re.sub('comedy or musical', 'comedymusical', award)
         award = filter_word_in_list(award, stop_words)
-        # print(award)
-
         clean_awards.append(award)
     return clean_awards
 
@@ -360,7 +328,6 @@ def get_HARDCODED_AWARD_DATA(year): #TODO do not use in final product.
     return json_data['award_data']
 
 def match_movie(look_phrase_str):
-    # print('@movie matched', look_phrase_str)
     movie_key_words = ['screenplay', 'film', 'pictures', 'picture', 'score', 'song', 'series', 'theme']
     for word in movie_key_words:
         if re.search(word, look_phrase_str):
@@ -368,7 +335,6 @@ def match_movie(look_phrase_str):
                 return True
     return False
 def match_person(look_phrase_str):
-    # print('@person matched: ', look_phrase_str)
     movie_key_words = ['director', 'actor', 'actress', 'demille']
     for word in movie_key_words:
         if re.search(word, look_phrase_str):
@@ -376,12 +342,172 @@ def match_person(look_phrase_str):
     return False
 
 def remove_words_from_tweet(tweet, lst):
-    # lst = lst + ['supporting', 'actress', 'actor']
     filtered = []
     for word in tweet:
         if not any([re.search(val, word) for val in lst]):
             filtered.append(word)
     return filtered
+
+def compute_bigram_hosts(year, any_filter_word, alpha):
+    hosts = []
+    dict_names = dict()
+    cleaned_tweets = get_cleaned_tweets(year)
+    num_tweets_with_word = 0
+    for tweet in cleaned_tweets:
+        if any(re.search(any_filter_word, word) for word in tweet):
+            if not 'next' in tweet:
+                # print(tweet)
+                num_tweets_with_word += 1
+                for i in range(len(tweet) - 1):
+                    pot_name = tweet[i] + '_' + tweet[i + 1]
+                    # print(pot_name)
+                    if pot_name in dict_names:
+                        dict_names[pot_name] += 1
+                    else:
+                        dict_names[pot_name] = 1
+    '''
+        Magic constant below is calculated as a percentage of total tweets, since 2015 is
+        much larger than 2013...
+    '''
+    magic_constant = alpha * num_tweets_with_word
+    for key, val in dict_names.items():
+        if val > magic_constant:
+            # hosts.append(str(key) + str(val))
+            hosts.append(str(key).replace('_', ' '))
+    return hosts
+
+def get_hosts(year):
+    small_helper_methods.get_kb_actors()
+    return compute_bigram_hosts(year, 'host', .28)
+
+
+def get_nominees_helper(all_awards, tweets):
+    kb_actors = small_helper_methods.get_kb_actors()
+    kb_movies = small_helper_methods.get_kb_movies()
+    json_data = get_HARDCODED_AWARD_DATA('2013')
+    selected_winners = dict()
+    for idx in range(int(len(all_awards))):
+        look_phrase = all_awards[idx].split(' - ')
+        dict_names = dict()
+        pot_winners = []
+        winners = []
+
+        print('--------------!---------------------------------------------------------')
+
+        print(LIST_OF_AWARDS[idx])
+
+        if match_person(look_phrase[0]):
+            if len(look_phrase) > 1:
+                look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1].split(' ')[0]
+        else:
+            if len(look_phrase) > 1:
+                # print(look_phrase)
+                if re.search('comedy', look_phrase[1]):
+                    look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1].split(' ')[0]
+                else:
+                    if not re.search('motion', look_phrase[1]):
+                        look_phrase[0] = look_phrase[0] + ' ' + look_phrase[1]
+        print(look_phrase[0])
+        num_tweets_with_word = 0
+        for tweet in tweets:
+            if tweet_contains_all_words(tweet, look_phrase[0].split(' ')):
+                if any([re.search('nomin', val) for val in tweet]):
+                    tweet = remove_words_from_tweet(tweet, look_phrase[0].split(' '))
+                    num_tweets_with_word += 1
+                    for i in range(len(tweet) - 1):
+                        # pot_name = tweet[i]
+                        pot_name = tweet[i] + '_' + tweet[i + 1]
+                        # print(pot_name)
+                        if pot_name in dict_names:
+                            dict_names[pot_name] += 1
+                        else:
+                            dict_names[pot_name] = 1
+                            # num_tweets_with_word = 0
+        magic_constant = .28 * num_tweets_with_word
+        for key, val in dict_names.items():
+            if val > magic_constant:
+                # winners.append(str(key) + str(val))
+                pot_winners.append(str(key).replace('_', ' '))
+        # print(pot_winners)
+        if match_movie(look_phrase[0]):
+            # print('&*', pot_winners)
+            for candidate in pot_winners:
+                if candidate not in look_phrase[0].split(' ') and candidate not in ['motion', 'picture','winner','best', 'wins', 'won', 'actor','actress', 'comedy', 'musical', '-']:
+
+                    lst = [movie for movie in kb_movies if re.search(candidate + ' ', movie)]
+                    # print('cand:', candidate, lst)
+                    if (len(lst) < 1):
+                        lst= []
+                        for movie in kb_movies:
+                            if re.search(candidate, movie):
+                                if len(movie.split(' ')) < 2:
+                                    lst.append(movie)
+                    if len(lst) > 0 and len(lst) < 5:
+
+                        winners.append(lst)
+                    else:
+                        lst = []
+                        for movie in kb_movies:
+                            if re.search(candidate, movie):
+                                if len(movie.split(' ')) < 2:
+                                    lst.append(movie)
+                        if len(lst) > 0 and len(lst) < 5:
+
+                            winners.append(lst)
+                        else:
+                            lst = []
+                            for movie in kb_movies:
+                                if re.search(' '+candidate, movie):
+                                    lst.append(movie)
+                            if len(lst) > 0 and len(lst) < 5:
+
+                                winners.append(lst)
+                    if len(winners) < 1:
+                        lst.append(candidate)
+                        lst = [w for w in lst if w in kb_movies]
+                        if len(lst) > 0 and len(lst) < 5:
+                            # print('candidate:', candidate, lst)
+                            winners.append([w for w in lst if w in kb_movies])
+        if match_person(look_phrase[0]):
+            # print('&*', pot_winners)
+            for j in range(len(pot_winners)):
+                cand = pot_winners[j]
+                if cand not in ['best', 'drama', 'actor', 'actress', 'cecil']:
+                    lst = [movie for movie in kb_actors if re.search(cand + ' ', movie)]
+                    print('candidate:', cand, lst)
+                    if len(lst) < 1:
+                        lst = [movie for movie in kb_actors if re.search(cand, movie)]
+                    # print(cand+'   ---list: ' ,lst)
+                    counter = j
+                    while len(lst) > 0:
+                        if (counter < len(pot_winners) - 1):
+                            cand += (' ' + pot_winners[counter + 1])
+                            child_lst = [movie for movie in kb_actors if re.search(cand, movie)]
+                            # print('candidate child:', cand, lst)
+                            if (len(child_lst) > 0):
+                                lst = child_lst
+                            counter += 1
+                        else:
+                            break
+                    if len(lst) > 0 and len(lst) < 6:
+                        winners.append(lst)
+        if len(winners) > 0:
+            print('potential nominees: ', pot_winners)
+            print(winners)
+            print('# Winners: ', winners)
+            print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
+        else:
+            print("FAILED#$")
+            print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
+        winners = [win[0] for win in winners]
+        print(winners)
+
+        if len(winners) > 0:
+            selected_winners[LIST_OF_AWARDS[idx]] = winners
+        else:
+            selected_winners[LIST_OF_AWARDS[idx]] = ['a']
+
+    return selected_winners
 
 def get_presenter_helper(all_awards, tweets, calc_winners):
     # print(calc_winners)
@@ -497,9 +623,8 @@ def get_presenter_helper(all_awards, tweets, calc_winners):
 
 
 def subrat_get_presenters(all_awards, tweets):
-    kb_actors = get_kb_actors()
-    kb_directors = get_kb_directors()
-    kb_movies = get_kb_movies()
+    kb_actors = small_helper_methods.get_kb_actors()
+
     json_data = get_HARDCODED_AWARD_DATA('2013')
     selected_winners = dict()
     for idx in range(int(len(all_awards))):
@@ -580,9 +705,8 @@ def subrat_get_presenters(all_awards, tweets):
 
 def subrat_get_winner(all_awards, tweets):
     #TODO take out parentheses of winners
-    kb_actors = get_kb_actors()
-    kb_directors = get_kb_directors()
-    kb_movies = get_kb_movies()
+    kb_actors = small_helper_methods.get_kb_actors()
+    kb_movies = small_helper_methods.get_kb_movies()
     json_data = get_HARDCODED_AWARD_DATA('2013')
     selected_winners = dict()
 
@@ -733,6 +857,13 @@ def get_presenter(year):
     return get_presenter_helper(hardcoded_awards, tweets, selected_winners)
     # return subrat_get_presenters(hardcoded_awards, tweets)
 
+def get_nominee(year):
+    tweets = get_cleaned_tweets(year)
+    hardcoded_awards = get_hardcoded_awards()
+    # selected_winners = get_winner(year)
+    return get_nominees_helper(hardcoded_awards, tweets)
+    # return subrat_get_presenters(hardcoded_awards, tweets)
+
 def main():
     '''
         The loading of tweets takes a while, so writing it to cleaned.csv to read from
@@ -740,9 +871,11 @@ def main():
         TODO
     '''
 
+
     # write_file([2013]);
     tweets = get_cleaned_tweets(2013)
     get_presenter('2013')
+
 
 
 
