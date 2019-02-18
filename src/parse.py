@@ -485,7 +485,7 @@ def get_nominees_helper(all_awards, tweets):
                                 # print('key matched: ', key)
                             pot_winners.add(item)
                 # if match_movie(look_phrase[0]):
-        winners = pot_winners
+        winners = list(pot_winners)
         # print('#winners: ', winners)
         # print('#Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
 
@@ -499,7 +499,7 @@ def get_nominees_helper(all_awards, tweets):
         # else:
         #     print("FAILED#$")
         #     print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
-        winners = [win[0] for win in winners]
+        winners = [win for win in winners[:5]]
         # print(winners)
         if len(winners) > 0:
             selected_winners[LIST_OF_AWARDS[idx]] = winners
@@ -726,12 +726,13 @@ def main():
     '''
     # write_file(['2013'])
     # start = time.time()
-    # tweets = get_cleaned_tweets('2013', 'stopwords')
+    tweets = get_cleaned_tweets('2013', 'stopwords')
+    print(len(tweets))
     # end = time.time()
     # print('reading tweets from file : {0:.2f} seconds for {1}'.format(end - start, '2013'))
-    for tweet in get_cleaned_tweets('2013', 'stopwords'):
-        if 'cooper' in tweet:
-            print(tweet)
+    # for tweet in get_cleaned_tweets('2013', 'stopwords'):
+    #     if 'cooper' in tweet:
+    #         print(tweet)
 
 if __name__ == '__main__':
     main()
