@@ -93,15 +93,13 @@ def pre_ceremony():
     plain text file. It is the first thing the TA will run when grading.
     Do NOT change the name of this function or what it returns.'''
     year_list = ['2013','2015','2018', '2019']
-    # for year in year_list:
-    #     try:
-    #         parse.write_file([year])
-    #     except:
-    #         print("FILE NOT FOUND ERROR: Something went wrong when creating local copies. Make sure the files you need are present in the flat directory.")
-    #
-    # KBLoader.get_kb_lists()
-    #
-    #
+    for year in year_list:
+        try:
+            parse.write_file([year])
+        except:
+            print("FILE NOT FOUND ERROR: Something went wrong when creating local copies. Make sure the files you need are present in the flat directory.")
+
+    KBLoader.get_kb_lists()
 
     for year in year_list:
         print('creating output file for ', year)
@@ -117,8 +115,6 @@ def pre_ceremony():
 
         with open('output_file'+str(year)+'.json', 'w') as f:
             json.dump(results, f)
-
-
 
     print("Pre-ceremony processing complete.")
     return
