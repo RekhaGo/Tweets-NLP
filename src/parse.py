@@ -7,6 +7,8 @@ from math import floor, ceil
 import os.path
 import json
 import time
+import numpy as np
+
 import small_helper_methods
 
 
@@ -23,7 +25,7 @@ from nltk, averaged_perceptron_tagger
 
 
 
-
+from src import small_helper_methods
 
 LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
@@ -204,15 +206,14 @@ def reg_chunker(tweets):
 
     parser = nltk.RegexpParser(patterns)
     trees = []
+    np.random.shuffle(tweets)
     keywords = {'best','performance', 'motion', 'television', 'series', 'music', 'artist', 'film', 'actor', 'actress', 'musical',
                 'comedy', 'album', 'lead', 'director', 'original', 'language', 'foreign', 'actress', 'actor', 'singer', 'musician', 'feature',
                 'award', 'awards', 'drama', 'supporting'}
     n_total = 0
-    tot_tweets = len(tweets)
-    for i,tweet in enumerate(tweets):
-        # perc = (float(i)/tot_tweets)*100
-        # if i%100000.0 == 0:
-            # print (str(perc) + '% Complete')
+    # tot_tweets = len(tweets[:len(tweets)/2])
+
+    for tweet in tweets[:int(len(tweets)/2)]:
         if any(key in tweet for key in keywords):
             tweet = list(filter(lambda a: a != '-', tweet))
             if len(nltk.pos_tag(tweet))!=0:
