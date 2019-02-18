@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[9]:
 
 
 # import statements  
@@ -25,7 +25,7 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
     '''
     plot the barh for sentiment analysis
     '''
-    tmp_df=df_plot[df_plot['No of Tweets']>100]
+    tmp_df=df_plot[df_plot['No of Tweets']>0]
     tmp_df=(tmp_df[tmp_df.columns[No_of_col_in_csv:-1]]).T
     headers = tmp_df.iloc[0]
     tmp_df.columns =headers
@@ -39,18 +39,28 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
         axes[i].title.set_size(14)
     plt.tight_layout()
     plt.savefig(filename)
-    plt.show()
+    
           
 def main():
     global No_of_col_in_csv
     global filename
-    # import the hosts list
-    analysis_df=load_analysis_data('hosts_2013.csv')
-    filename='hosts_2013'
-    No_of_col_in_csv=len(analysis_df.columns)
-    analysis_df['Title']=analysis_df['Hosts']
-    # import twitter data
-    tweets=load_tweet('../data/gg2013.json')
+    while True:
+        try:
+            # Get year for analysis
+            year = input("Please enter the year : ")
+            # import the hosts list
+            analysis_filename='hosts_'+str(year)+'.csv'
+            analysis_df=load_analysis_data(analysis_filename)
+            filename='hosts_'+str(year)
+            No_of_col_in_csv=len(analysis_df.columns)
+            analysis_df['Title']=analysis_df['Hosts']
+            # import twitter data
+            json_name='gg'+str(year)+'.json'
+            tweets=load_tweet(json_name)
+            break
+        except(FileNotFoundError, IOError):
+            print("File not found. Please enter a valid year")
+
     #calculate and plot sentiment analysis
     strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets=sentiment_analysis(analysis_df['Hosts'],tweets)
     response_df=pd.DataFrame(np.column_stack([strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets]), 
@@ -65,10 +75,4 @@ def main():
 if __name__ == '__main__':
     
     main()
-
-
-# In[ ]:
-
-
-
 

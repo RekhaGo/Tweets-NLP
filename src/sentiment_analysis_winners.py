@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 
 # import statements  
@@ -36,7 +36,7 @@ def clean_tweet(tweet):
     '''
     Remove @,rt,links and special character
     '''
-    return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z!?])|(http(.*))|(^rt)", " ", tweet).split())
+    return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z!?])|(http(.*))|(^rt)|(^a$)|(^the$)", " ", tweet).split())
 
 def polarity(text):
     '''
@@ -134,7 +134,7 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
     '''
     plot the barh for sentiment analysis
     '''
-    tmp_df=df_plot[df_plot['No of Tweets']>100]
+    tmp_df=df_plot[df_plot['No of Tweets']>0]
     tmp_df=(tmp_df[tmp_df.columns[No_of_col_in_csv:-1]]).T
     headers = tmp_df.iloc[0]
     tmp_df.columns =headers
@@ -147,18 +147,29 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
         axes[i].title.set_color('red')
         axes[i].title.set_size(14)
     plt.tight_layout()
-    plt.savefig(filename)
-    plt.show()
+    plt.savefig(filename,bbox_inches = "tight")
+   
              
 def main():
-    # import the winners list
-    analysis_df=load_analysis_data('winner_2013.csv')
-    filename='winner_2013'
-    No_of_col_in_csv=len(analysis_df.columns)
-    analysis_df['Title']=analysis_df['Categories']+'\n'+analysis_df['Winners']
-    # import twitter data
-    tweets=load_tweet('../data/gg2013.json')
-    #calculate and plot sentiment analysis
+    while True:
+        try:
+            # Get year for analysis
+            year = input("Please enter the year : ")
+            # import the winners list
+            analysis_filename='winner_'+str(year)+'.csv'
+            analysis_df=load_analysis_data(analysis_filename)
+            filename='winner_'+str(year)
+            No_of_col_in_csv=len(analysis_df.columns)
+            analysis_df['Title']=analysis_df['Categories']+'\n'+analysis_df['Winners']
+
+            # import twitter data
+            json_name='gg'+str(year)+'.json'
+            tweets=load_tweet(json_name)
+            break
+        except(FileNotFoundError, IOError):
+            print("File not found. Please enter a valid year")
+    
+    #calculate and plot sentiment analysis for winners
     strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets=sentiment_analysis(analysis_df['Winners'],tweets)
     response_df=pd.DataFrame(np.column_stack([strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets]), 
         columns=['Strong_Positive', 'Positive', 'Weak Positive','Neutral','Weak Negative','Negative','Strong Negative','No of Tweets'])
@@ -168,14 +179,7 @@ def main():
     print(f"The plot will be saved in the file, {filename_plot}")
     plot_it(final_data,No_of_col_in_csv,filename_plot)
     
-    
 if __name__ == '__main__':
     
     main()
-
-
-# In[ ]:
-
-
-
 
