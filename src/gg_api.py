@@ -148,8 +148,6 @@ def main():
 
     print("NOTE: If the code fails and returns a module not found, please run the command: sh package.sh")
     pre_ceremony()
-
-    # parse.write_file(['2013', '2015'])
     pretty_print('2013')
 
     return
