@@ -1,7 +1,6 @@
 '''Version 0.35'''
-
-import json
 import parse
+import json
 import KBLoader
 
 from sentiment_analysis_hosts import get_sent_host
@@ -39,16 +38,29 @@ def get_nominees(year):
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
     # Your code here
+    null_val = {'a'}
     f = open('output_file' + str(year) + '.json')
     json_data = json.load(f)
     f.close()
     nominees = parse.get_nominee(year)
     if year in ['2013', '2015']:
         for award in OFFICIAL_AWARDS_1315:
-            json_data['award_data'][award]['nominees'] = nominees[award]
+            nom_vals = []
+            for word in nominees[award]:
+                if word in null_val:
+                    nom_vals.append('na')
+                else:
+                    nom_vals.append(word)
+            json_data['award_data'][award]['nominees'] = nom_vals
     else:
         for award in OFFICIAL_AWARDS_1819:
-            json_data['award_data'][award]['nominees'] = nominees[award]
+            for word in nominees[award]:
+                nom_vals = []
+                if word in null_val:
+                    nom_vals.append('na')
+                else:
+                    nom_vals.append(word)
+            json_data['award_data'][award]['nominees'] = nom_vals
 
     with open('output_file'+str(year)+'.json', 'w') as f:
         json.dump(json_data, f)
@@ -160,13 +172,13 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-
     print("NOTE: If the code fails and returns a module not found, please run the command: sh package.sh")
     print("NOTE: To run sentiment analysis use the function get_sentiments(year) passing in the year as an argument")
     print("NOTE: To run red carpet analysis use the function get_red_carpet(year) passing in the year as an argument")
     print("NOTE: After running the autograder, you may use the pretty_print(year) function to display the results in a human readable format")
     print("NOTE: Output jsons will be generated as output_file(year).json")
     pre_ceremony()
+
 
     return
 
