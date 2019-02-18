@@ -150,36 +150,38 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
     plt.savefig(filename,bbox_inches = "tight")
    
              
-def main():
-    while True:
-        try:
-            # Get year for analysis
-            year = input("Please enter the year : ")
-            # import the winners list
-            analysis_filename='winner_'+str(year)+'.csv'
-            analysis_df=load_analysis_data(analysis_filename)
-            filename='winner_'+str(year)
-            No_of_col_in_csv=len(analysis_df.columns)
-            analysis_df['Title']=analysis_df['Categories']+'\n'+analysis_df['Winners']
+def get_sentiment_win(year):
 
-            # import twitter data
-            json_name='gg'+str(year)+'.json'
-            tweets=load_tweet(json_name)
-            break
-        except(FileNotFoundError, IOError):
-            print("File not found. Please enter a valid year")
-    
-    #calculate and plot sentiment analysis for winners
-    strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets=sentiment_analysis(analysis_df['Winners'],tweets)
-    response_df=pd.DataFrame(np.column_stack([strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets]), 
-        columns=['Strong_Positive', 'Positive', 'Weak Positive','Neutral','Weak Negative','Negative','Strong Negative','No of Tweets'])
-    final_data = pd.concat([analysis_df, response_df],axis=1)
-    final_data['Title']=final_data['Title']+' \n Sentiment Analysis in % from: '+ final_data['No of Tweets'].astype(str)+' Tweets'
-    filename_plot=filename+'_plot.pdf'
-    print(f"The plot will be saved in the file, {filename_plot}")
-    plot_it(final_data,No_of_col_in_csv,filename_plot)
-    
+    try:
+        print("Sentiment Analysis for Winners starts ....")
+        # import the winners list
+        analysis_filename='winner_'+str(year)+'.csv'
+        analysis_df=load_analysis_data(analysis_filename)
+        filename='winner_'+str(year)
+        No_of_col_in_csv=len(analysis_df.columns)
+        analysis_df['Title']=analysis_df['Categories']+'\n'+analysis_df['Winners']
+
+        # import twitter data
+        json_name='gg'+str(year)+'.json'
+        tweets=load_tweet(json_name)
+        # calculate and plot sentiment analysis for winners
+        strong_pos, pos, weak_pos, neutral, weak_neg, neg, strong_neg, no_of_tweets = sentiment_analysis(
+            analysis_df['Winners'], tweets)
+        response_df = pd.DataFrame(
+            np.column_stack([strong_pos, pos, weak_pos, neutral, weak_neg, neg, strong_neg, no_of_tweets]),
+            columns=['Strong_Positive', 'Positive', 'Weak Positive', 'Neutral', 'Weak Negative', 'Negative',
+                     'Strong Negative', 'No of Tweets'])
+        final_data = pd.concat([analysis_df, response_df], axis=1)
+        final_data['Title'] = final_data['Title'] + ' \n Sentiment Analysis in % from: ' + final_data[
+            'No of Tweets'].astype(str) + ' Tweets'
+        filename_plot = filename + '_plot.pdf'
+        print(f"The plot will be saved in the file, {filename_plot}")
+        plot_it(final_data, No_of_col_in_csv, filename_plot)
+
+    except(FileNotFoundError, IOError):
+        print("File not found. Please enter a valid year")
+    print("Sentiment Analysis for Winners Ends ....")
+
 if __name__ == '__main__':
-    
-    main()
+    get_sentiment_win(year)
 

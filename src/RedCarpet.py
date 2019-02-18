@@ -131,34 +131,33 @@ def plot_it(best_dress_name_list,worst_dress_name_list,most_dress_name_list):
     display(result)
     
     
-def main():
-    while True:
-        try:
-            # Get year for analysis
-            year = input("Please enter the year : ")
-            # import twitter data
-            json_name='gg'+str(year)+'.json'
-            tweets=load_tweet(json_name)
-            break
-        except(FileNotFoundError, IOError):
-            print("File not found. Please enter a valid year")
-    red_carpet_twts=red_carpet_tweets(tweets)
-    if len(red_carpet_twts)>150010:
-        random_red_twts=random.sample(red_carpet_twts, 150000)
-        cleaned_twt=clean_common_words(random_red_twts)
-    else:
-        cleaned_twt=clean_common_words(red_carpet_twts)
-    
-    #split tweets based on polarity
-    best_dress,worst_dress,neutral_dress=polarity(cleaned_twt)
-    #get most frequent names from tweets
-    best_dress_name_list=frequent_name(best_dress)
-    worst_dress_name_list=frequent_name(worst_dress)
-    neutral_dress_name_list=frequent_name(neutral_dress)
-    most_discussed_list= list(itertools.chain(best_dress_name_list,worst_dress_name_list,neutral_dress_name_list))
-    plot_it(best_dress_name_list,worst_dress_name_list,most_discussed_list)
+def get_redcarpet(year):
+    try:
+        print("Analysis for Red Carpet starts ....")
+        # import twitter data
+        json_name='gg'+str(year)+'.json'
+        tweets=load_tweet(json_name)
+        red_carpet_twts = red_carpet_tweets(tweets)
+        if len(red_carpet_twts) > 150010:
+            random_red_twts = random.sample(red_carpet_twts, 150000)
+            cleaned_twt = clean_common_words(random_red_twts)
+        else:
+            cleaned_twt = clean_common_words(red_carpet_twts)
+
+        # split tweets based on polarity
+        best_dress, worst_dress, neutral_dress = polarity(cleaned_twt)
+        # get most frequent names from tweets
+        best_dress_name_list = frequent_name(best_dress)
+        worst_dress_name_list = frequent_name(worst_dress)
+        neutral_dress_name_list = frequent_name(neutral_dress)
+        most_discussed_list = list(
+            itertools.chain(best_dress_name_list, worst_dress_name_list, neutral_dress_name_list))
+        plot_it(best_dress_name_list, worst_dress_name_list, most_discussed_list)
+
+    except(FileNotFoundError, IOError):
+        print("File not found. Please enter a valid year")
+    print("Analysis for Red Carpet ends ....")
 
 if __name__ == '__main__':
-    
-    main()
+    get_redcarpet(year)
 

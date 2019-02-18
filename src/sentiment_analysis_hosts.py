@@ -41,38 +41,43 @@ def plot_it(df_plot,No_of_col_in_csv,filename):
     plt.savefig(filename)
     
           
-def main():
+def get_sent_host(year):
     global No_of_col_in_csv
     global filename
-    while True:
-        try:
-            # Get year for analysis
-            year = input("Please enter the year : ")
-            # import the hosts list
-            analysis_filename='hosts_'+str(year)+'.csv'
-            analysis_df=load_analysis_data(analysis_filename)
-            filename='hosts_'+str(year)
-            No_of_col_in_csv=len(analysis_df.columns)
-            analysis_df['Title']=analysis_df['Hosts']
-            # import twitter data
-            json_name='gg'+str(year)+'.json'
-            tweets=load_tweet(json_name)
-            break
-        except(FileNotFoundError, IOError):
-            print("File not found. Please enter a valid year")
 
-    #calculate and plot sentiment analysis
-    strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets=sentiment_analysis(analysis_df['Hosts'],tweets)
-    response_df=pd.DataFrame(np.column_stack([strong_pos,pos,weak_pos,neutral,weak_neg,neg,strong_neg,no_of_tweets]), 
-        columns=['Strong_Positive', 'Positive', 'Weak Positive','Neutral','Weak Negative','Negative','Strong Negative','No of Tweets'])
-    final_data = pd.concat([analysis_df, response_df],axis=1)
-    final_data['Title']=final_data['Title']+' \n Sentiment Analysis in % from: '+ final_data['No of Tweets'].astype(str)+' Tweets'
-    filename_plot=filename+'_plot.pdf'
-    print(f"The plot will be saved in the file, {filename_plot}")
-    plot_it(final_data,No_of_col_in_csv,filename_plot)
+    try:
+        print("Sentiment Analysis for Hosts starts ....")
+        # import the hosts list
+        analysis_filename='hosts_'+str(year)+'.csv'
+        analysis_df=load_analysis_data(analysis_filename)
+        filename='hosts_'+str(year)
+        No_of_col_in_csv=len(analysis_df.columns)
+        analysis_df['Title']=analysis_df['Hosts']
+        # import twitter data
+        json_name='gg'+str(year)+'.json'
+        tweets=load_tweet(json_name)
+        # calculate and plot sentiment analysis
+        strong_pos, pos, weak_pos, neutral, weak_neg, neg, strong_neg, no_of_tweets = sentiment_analysis(
+            analysis_df['Hosts'], tweets)
+        response_df = pd.DataFrame(
+            np.column_stack([strong_pos, pos, weak_pos, neutral, weak_neg, neg, strong_neg, no_of_tweets]),
+            columns=['Strong_Positive', 'Positive', 'Weak Positive', 'Neutral', 'Weak Negative', 'Negative',
+                     'Strong Negative', 'No of Tweets'])
+        final_data = pd.concat([analysis_df, response_df], axis=1)
+        final_data['Title'] = final_data['Title'] + ' \n Sentiment Analysis in % from: ' + final_data[
+            'No of Tweets'].astype(str) + ' Tweets'
+        filename_plot = filename + '_plot.pdf'
+        print(f"The plot will be saved in the file, {filename_plot}")
+        plot_it(final_data, No_of_col_in_csv, filename_plot)
+
+    except(FileNotFoundError, IOError):
+        print("File not found. Please enter a valid year")
+
+    print("Sentiment Analysis for Hosts ends ....")
+
+
     
     
 if __name__ == '__main__':
-    
-    main()
+    get_sent_host(year)
 

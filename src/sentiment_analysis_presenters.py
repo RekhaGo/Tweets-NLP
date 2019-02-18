@@ -54,31 +54,31 @@ def split_categories(analysis_df,tweets):
         pd.set_option('max_colwidth', -1)
         display(presenter_df)       
                       
-def main():
+def get_sent_presenter(year):
     global No_of_col_in_csv
     global filename
-    while True:
-        try:
-            # Get year for analysis
-            year = input("Please enter the year : ")
-            # import the presenters list
-            analysis_filename='presenters_'+str(year)+'.csv'
-            analysis_df=load_analysis_data(analysis_filename)
-            # import twitter data
-            json_name='gg'+str(year)+'.json'
-            tweets=load_tweet(json_name)
-            break
-        except(FileNotFoundError, IOError):
-            print("File not found. Please enter a valid year")
-    #calculate and plot sentiment analysis
-    if len(tweets)>1054153:
-        filter_tweets=random.sample(tweets, 1000000)
-        split_categories(analysis_df,filter_tweets)
-    else:
-        split_categories(analysis_df,tweets)
+
+    try:
+        # import the presenters list
+        print("Sentiment Analysis for Presenters starts ....")
+        analysis_filename='presenters_'+str(year)+'.csv'
+        analysis_df=load_analysis_data(analysis_filename)
+        # import twitter data
+        json_name='gg'+str(year)+'.json'
+        tweets=load_tweet(json_name)
+        # calculate and plot sentiment analysis
+        if len(tweets) > 1054153:
+            filter_tweets = random.sample(tweets, 1000000)
+            split_categories(analysis_df, filter_tweets)
+        else:
+            split_categories(analysis_df, tweets)
+
+    except(FileNotFoundError, IOError):
+        print("File not found. Please enter a valid year")
+    print("Sentiment Analysis for Presenters ends ....")
+
     
 
 if __name__ == '__main__':
-    
-    main()
+    get_sent_presenter(year)
 
