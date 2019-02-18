@@ -9,7 +9,7 @@ from pprint import pprint
 from collections import Counter
 
 from nltk.metrics import edit_distance
-
+import time
 import gg_api
 
 global toMovie
@@ -202,6 +202,7 @@ def score_unstructured(year, answers, info_type):
 
 
 def main(years, grading):
+    start = time.time()
     types = ['spelling', 'completeness']
 
     scores = {y: {g: {t:0 for t in types} for g in grading} for y in years}
@@ -220,11 +221,13 @@ def main(years, grading):
         if "winner" in grading:
             del scores[y]['winner']['completeness']
     pprint(scores)
+    end = time.time()
+    print('Total Run Time : {0:.2f} seconds'.format(end - start))
 
 if __name__ == '__main__':
-    years = ['2013','2015']
-    # grading = ["presenters"]
-    grading = ["hosts", "awards", "nominees", "presenters", "winner"]
+    years = ['2013']
+    # grading = ["winner"]
+    grading = ["presenters"]
 
     if len(sys.argv) > 1:
         if '2013' in sys.argv:
