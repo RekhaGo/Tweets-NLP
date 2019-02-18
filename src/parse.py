@@ -546,7 +546,7 @@ def updated_presenter(all_awards, tweets, calc_winners):
     return selected_winners
 
 
-def subrat_get_winner(all_awards, tweets):
+def get_winner_helper(all_awards, tweets):
     #TODO take out parentheses of winners
     kb_actors = small_helper_methods.get_kb_actors()
     kb_movies = small_helper_methods.get_kb_movies()
@@ -599,7 +599,7 @@ def subrat_get_winner(all_awards, tweets):
         if match_movie(look_phrase[0]):
             # print('&*', pot_winners)
             for candidate in pot_winners:
-                if candidate not in look_phrase[0].split(' ') and candidate not in ['motion', 'picture','winner','best', 'wins', 'won', 'actor','actress', 'comedy', 'musical', '-']:
+                if candidate not in look_phrase[0].split(' ') and candidate not in {'motion', 'picture','winner','best', 'wins', 'won', 'actor','actress', 'comedy', 'musical', '-'}:
 
                     lst = [movie for movie in kb_movies if re.search(candidate + ' ', movie)]
                     # print('cand:', candidate, lst)
@@ -686,7 +686,7 @@ def get_winner(year):
 
         tweets = get_cleaned_tweets(year, 'stopwords')
         hardcoded_awards = get_hardcoded_awards()
-        selected_winners = subrat_get_winner(hardcoded_awards, tweets)
+        selected_winners = get_winner_helper(hardcoded_awards, tweets)
         cach_start = time.time()
         json_data = json.dumps(selected_winners)
         f = open('calculated_winners'+year+'.json', "w")
