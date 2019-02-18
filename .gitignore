@@ -99,3 +99,5 @@ fabric.properties
 **/src/cleaned*
 **/src/gg20*
 **/src/kb_*
+**/src/calculated_*
+**/src/_*
