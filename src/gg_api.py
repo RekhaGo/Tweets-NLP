@@ -60,6 +60,7 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
+    print("NOTE: If the code fails and returns a module not found, please run the command: sh package.sh")
     pre_ceremony()
     # parse.write_file(['2013', '2015'])
 
