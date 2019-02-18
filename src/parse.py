@@ -7,7 +7,7 @@ from math import floor, ceil
 import os.path
 import json
 import time
-
+import small_helper_methods
 
 
 '''
@@ -23,7 +23,7 @@ from nltk, averaged_perceptron_tagger
 
 
 
-from src import small_helper_methods
+
 
 LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
@@ -462,7 +462,7 @@ def get_nominees_helper(all_awards, tweets):
                                 dict_names[pot_name] = 1
                                 # num_tweets_with_word = 0
                     else:
-                        for i in range(len(tweet)):
+                        for i in range(len(tweet)-1):
                             pot_name = tweet[i]
                             # pot_name = tweet[i] + ' ' + tweet[i + 1]
                             # print(pot_name)
@@ -471,21 +471,22 @@ def get_nominees_helper(all_awards, tweets):
                             else:
                                 dict_names[pot_name] = 1
                                 # num_tweets_with_word = 0
-        magic_constant = 0 * num_tweets_with_word
+        magic_constant = .90* num_tweets_with_word
         # print('-----------look_phrase{}'.format(look_phrase))
         for key, val in dict_names.items():
-            if val > magic_constant:
-                if match_person(look_phrase[0]):
-                    if key in kb_actors:
-                        pot_winners.add(key)
-                else:
+            if match_person(look_phrase[0]):
+                if key in kb_actors:
+                    pot_winners.add(key)
+            else:
+                if val > magic_constant:
                     for item in kb_movies:
-                        if re.search(key.split(' ')[0]+' ', item):
+                        if not re.search('\d', item):
+                            if re.search(key.split(' ')[0]+' ', item):
                             # if re.search(key.split(' ')[1], item):
                                 # print('key matched: ', key)
-                            pot_winners.add(item)
-                # if match_movie(look_phrase[0]):
-        winners = list(pot_winners)
+                                pot_winners.add(item)
+            # if match_movie(look_phrase[0]):
+        winners = pot_winners
         # print('#winners: ', winners)
         # print('#Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
 
@@ -499,15 +500,13 @@ def get_nominees_helper(all_awards, tweets):
         # else:
         #     print("FAILED#$")
         #     print('Actual_nominees: ', json_data[LIST_OF_AWARDS[idx]]['nominees'])
-        winners = [win for win in winners[:5]]
+        winners = [win for win in winners]
         # print(winners)
         if len(winners) > 0:
             selected_winners[LIST_OF_AWARDS[idx]] = winners
         else:
-            selected_winners[LIST_OF_AWARDS[idx]] = ['']
-
+            selected_winners[LIST_OF_AWARDS[idx]] = ['a']
     return selected_winners
-
 
 
 def updated_presenter(all_awards, tweets, calc_winners):
@@ -726,8 +725,8 @@ def main():
     '''
     # write_file(['2013'])
     # start = time.time()
-    tweets = get_cleaned_tweets('2013', 'stopwords')
-    print(len(tweets))
+    # tweets = get_cleaned_tweets('2013', 'stopwords')
+    # print(len(tweets))
     # end = time.time()
     # print('reading tweets from file : {0:.2f} seconds for {1}'.format(end - start, '2013'))
     # for tweet in get_cleaned_tweets('2013', 'stopwords'):

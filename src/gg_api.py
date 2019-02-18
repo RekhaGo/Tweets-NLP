@@ -1,5 +1,5 @@
 '''Version 0.35'''
-from src import parse
+import parse
 import KBLoader
 import json
 
@@ -32,16 +32,29 @@ def get_nominees(year):
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
     # Your code here
+    null_val = {'a'}
     f = open('output_file' + str(year) + '.json')
     json_data = json.load(f)
     f.close()
     nominees = parse.get_nominee(year)
     if year in ['2013', '2015']:
         for award in OFFICIAL_AWARDS_1315:
-            json_data['award_data'][award]['nominees'] = nominees[award]
+            nom_vals = []
+            for word in nominees[award]:
+                if word in null_val:
+                    nom_vals.append('na')
+                else:
+                    nom_vals.append(word)
+            json_data['award_data'][award]['nominees'] = nom_vals
     else:
         for award in OFFICIAL_AWARDS_1819:
-            json_data['award_data'][award]['nominees'] = nominees[award]
+            for word in nominees[award]:
+                nom_vals = []
+                if word in null_val:
+                    nom_vals.append('na')
+                else:
+                    nom_vals.append(word)
+            json_data['award_data'][award]['nominees'] = nom_vals
 
     with open('output_file'+str(year)+'.json', 'w') as f:
         json.dump(json_data, f)
@@ -143,9 +156,9 @@ def main():
     and then run gg_api.main(). This is the second thing the TA will
     run when grading. Do NOT change the name of this function or
     what it returns.'''
-    # pre_ceremony()
+    pre_ceremony()
     # parse.write_file(['2013', '2015'])
-    pretty_print('2013')
+    # pretty_print('2013')
 
     return
 
