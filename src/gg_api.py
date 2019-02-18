@@ -4,6 +4,11 @@ import json
 import parse
 import KBLoader
 
+from sentiment_analysis_hosts import get_sent_host
+from sentiment_analysis_winners import get_sentiment_win
+from sentiment_analysis_nominees import get_sent_nominee
+from sentiment_analysis_presenters import get_sent_presenter
+from RedCarpet import get_redcarpet
 
 OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 OFFICIAL_AWARDS_1819 = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
@@ -89,6 +94,16 @@ def get_presenters(year):
         json.dump(json_data, f)
     return presenters
 
+def get_sentiments(year):
+    get_sent_host(year)
+    get_sentiment_win(year)
+    get_sent_nominee(year)
+    get_sent_presenter(year)
+
+def get_red_carpet(year):
+    get_redcarpet(year)
+
+
 def pre_ceremony():
     '''This function loads/fetches/processes any data your program
     will use, and stores that data in your DB or in a json, csv, or
@@ -147,8 +162,11 @@ def main():
     what it returns.'''
 
     print("NOTE: If the code fails and returns a module not found, please run the command: sh package.sh")
+    print("NOTE: To run sentiment analysis use the function get_sentiments(year) passing in the year as an argument")
+    print("NOTE: To run red carpet analysis use the function get_red_carpet(year) passing in the year as an argument")
+    print("NOTE: After running the autograder, you may use the pretty_print(year) function to display the results in a human readable format")
+    print("NOTE: Output jsons will be generated as output_file(year).json")
     pre_ceremony()
-    pretty_print('2013')
 
     return
 
