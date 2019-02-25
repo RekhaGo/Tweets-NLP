@@ -728,8 +728,8 @@ def get_nominee(year):
     hardcoded_awards = get_hardcoded_awards(year)
     actual_awards = list_of_awards_by_year(year)
     result = get_nominees_helper(hardcoded_awards, tweets, actual_awards)
-    for key,val in result.items():
-        print(key,val)
+    # for key,val in result.items():
+    #     print(key,val)
 
     end = time.time()
     print('Nominees : {0:.2f} seconds for {1}'.format(end - start, year))
