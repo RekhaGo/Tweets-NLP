@@ -149,6 +149,7 @@ def pre_ceremony():
     return
 
 def pretty_print(year):
+    year = str(year)
     f = open('output_file' + str(year) + '.json')
     json_data = json.load(f)
     f.close()
