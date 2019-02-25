@@ -25,8 +25,8 @@ from nltk, averaged_perceptron_tagger
 
 
 
+# LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
-LIST_OF_AWARDS = ['best screenplay - motion picture', 'best director - motion picture', 'best performance by an actress in a television series - comedy or musical', 'best foreign language film', 'best performance by an actor in a supporting role in a motion picture', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best mini-series or motion picture made for television', 'best original score - motion picture', 'best performance by an actress in a television series - drama', 'best performance by an actress in a motion picture - drama', 'cecil b. demille award', 'best performance by an actor in a motion picture - comedy or musical', 'best motion picture - drama', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a motion picture', 'best television series - drama', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best animated feature film', 'best original song - motion picture', 'best performance by an actor in a motion picture - drama', 'best television series - comedy or musical', 'best performance by an actor in a television series - drama', 'best performance by an actor in a television series - comedy or musical']
 
 
 def load_data(filename):
@@ -107,13 +107,13 @@ def clean_stopwords(tweets):
         filtered_sentences.append(filtered)
     return filtered_sentences
 
-def get_clean_awards():
-    awards = []
-    stopwords = create_stop_words()
-    for award in LIST_OF_AWARDS:
-        filtered = [w for w in award if not w in stopwords]
-        awards.append(filtered)
-    return awards
+# def get_clean_awards():
+#     awards = []
+#     stopwords = create_stop_words()
+#     for award in LIST_OF_AWARDS:
+#         filtered = [w for w in award if not w in stopwords]
+#         awards.append(filtered)
+#     return awards
 
 def create_stop_words():
     '''
@@ -272,9 +272,15 @@ def filter_word_in_list(award, stop_words):
     return award
 
 
-def get_hardcoded_awards(): #TODO compiling regex to possibly make it faster??
+def get_hardcoded_awards(year): #TODO compiling regex to possibly make it faster??
     stop_words = [' or ', ' in ', ' a ', ' made ', ' for ']
     clean_awards = []
+
+    if year in ['2013', '2015']:
+        LIST_OF_AWARDS = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
+    else:
+        LIST_OF_AWARDS = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
+
     for award in LIST_OF_AWARDS:
         award = re.sub('^best .+ an\s', '', award)
         award = re.sub('best ', '', award)
@@ -290,6 +296,12 @@ def get_hardcoded_awards(): #TODO compiling regex to possibly make it faster??
         clean_awards.append(award)
     return clean_awards
 
+def list_of_awards_by_year(year):
+    if year in ['2013', '2015']:
+        LIST_OF_AWARDS = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
+    else:
+        LIST_OF_AWARDS = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
+    return LIST_OF_AWARDS
 
 
 def get_HARDCODED_AWARD_DATA(year): #TODO do not use in final product.
@@ -429,7 +441,7 @@ def verify_answer_by_look_phrase_type(look_phrase, pot_winners, kb_movies, kb_ac
                     winners.append(lst)
     return winners
 
-def get_nominees_helper(all_awards, tweets):
+def get_nominees_helper(all_awards, tweets, ACTUAL_AWARDS):
     kb_actors = small_helper_methods.get_kb_actors()
     kb_movies = small_helper_methods.get_kb_movies()
     # print(type(kb_actors))
@@ -503,20 +515,20 @@ def get_nominees_helper(all_awards, tweets):
         winners = [win for win in winners]
         # print(winners)
         if len(winners) > 0:
-            selected_winners[LIST_OF_AWARDS[idx]] = winners
+            selected_winners[ACTUAL_AWARDS[idx]] = winners
         else:
-            selected_winners[LIST_OF_AWARDS[idx]] = ['a']
+            selected_winners[ACTUAL_AWARDS[idx]] = ['a']
     return selected_winners
 
 
-def updated_presenter(all_awards, tweets, calc_winners):
+def updated_presenter(all_awards, tweets, calc_winners, ACTUAL_AWARDS):
     kb_actors = small_helper_methods.get_kb_actors()
     results_dict = dict()
     selected_winners = dict()
     for idx in range(int(len(all_awards))):
         dict_names = dict()
         pot_winners = set()
-        winner = calc_winners[LIST_OF_AWARDS[idx]]
+        winner = calc_winners[ACTUAL_AWARDS[idx]]
         look_phrase = all_awards[idx].split(' - ')
         num_tweets_with_word = 0
         winner_first_name = winner.split(' ')[0]
@@ -539,13 +551,13 @@ def updated_presenter(all_awards, tweets, calc_winners):
                     pot_winners.add(key)
         winners = [win for win in pot_winners]
         if len(winners) > 0:
-            selected_winners[LIST_OF_AWARDS[idx]] = winners
+            selected_winners[ACTUAL_AWARDS[idx]] = winners
         else:
-            selected_winners[LIST_OF_AWARDS[idx]] = ['']
+            selected_winners[ACTUAL_AWARDS[idx]] = ['']
     return selected_winners
 
 
-def get_winner_helper(all_awards, tweets):
+def get_winner_helper(all_awards, tweets, ACTUAL_AWARDS):
     #TODO take out parentheses of winners
     kb_actors = small_helper_methods.get_kb_actors()
     kb_movies = small_helper_methods.get_kb_movies()
@@ -667,9 +679,9 @@ def get_winner_helper(all_awards, tweets):
         #     print('Actual_winner: ', json_data[LIST_OF_AWARDS[idx]]['winner'])
         if len(winners) > 0:
             # print(winners[0][0].split('(')[0])
-            selected_winners[LIST_OF_AWARDS[idx]] = winners[0][0]
+            selected_winners[ACTUAL_AWARDS[idx]] = winners[0][0]
         else:
-            selected_winners[LIST_OF_AWARDS[idx]] = ' '
+            selected_winners[ACTUAL_AWARDS[idx]] = ' '
     # print(selected_winners)
     return selected_winners
 
@@ -684,8 +696,9 @@ def get_winner(year):
         print('running get_winner and caching')
 
         tweets = get_cleaned_tweets(year, 'stopwords')
-        hardcoded_awards = get_hardcoded_awards()
-        selected_winners = get_winner_helper(hardcoded_awards, tweets)
+        hardcoded_awards = get_hardcoded_awards(year)
+        actual_awards = list_of_awards_by_year(year)
+        selected_winners = get_winner_helper(hardcoded_awards, tweets, actual_awards)
         cach_start = time.time()
         json_data = json.dumps(selected_winners)
         f = open('calculated_winners'+year+'.json', "w")
@@ -699,10 +712,11 @@ def get_winner(year):
 def get_presenter(year):
     start = time.time()
     tweets = get_cleaned_tweets(year, 'stopwords')
-    hardcoded_awards = get_hardcoded_awards()
+    hardcoded_awards = get_hardcoded_awards(year)
+    actual_awards = list_of_awards_by_year(year)
     selected_winners = get_winner(year)
     # result = get_presenter_helper(hardcoded_awards, tweets, selected_winners)
-    result = updated_presenter(hardcoded_awards, tweets, selected_winners)
+    result = updated_presenter(hardcoded_awards, tweets, selected_winners, actual_awards)
     end = time.time()
     print('Presenters : {0:.2f} seconds for {1}'.format(end - start, year))
     return result
@@ -711,8 +725,12 @@ def get_presenter(year):
 def get_nominee(year):
     start = time.time()
     tweets = get_cleaned_tweets(year, 'stopwords')
-    hardcoded_awards = get_hardcoded_awards()
-    result = get_nominees_helper(hardcoded_awards, tweets)
+    hardcoded_awards = get_hardcoded_awards(year)
+    actual_awards = list_of_awards_by_year(year)
+    result = get_nominees_helper(hardcoded_awards, tweets, actual_awards)
+    for key,val in result.items():
+        print(key,val)
+
     end = time.time()
     print('Nominees : {0:.2f} seconds for {1}'.format(end - start, year))
     return result
